@@ -1145,11 +1145,11 @@ body.searching .main > h2 { margin-top: 56px; }
 <tr><td><code>whip_autos</code>, <code>whip_autos_shop</code></td><td>Feature</td><td>Whiplash: a customisation shop, turbos and nitrous; the shop building in Burton</td></tr>
 <tr><td><code>whip_voice</code></td><td>Feature</td><td>Voice chat on your own voice server, placed in 3D</td></tr>
 <tr><td><code>whip_chat</code>, <code>whip_loadingscreen</code></td><td>Feature</td><td>whip's chat and loading screen</td></tr>
-<tr><td><code>whip_assets_1</code> to <code>whip_assets_4</code></td><td>Pictures</td><td>Clothing, furniture, tattoo, vehicle and map pictures, kept out of whip_core so its updates stay small</td></tr>
+<tr><td><code>whip_media_clothing_male</code>, <code>whip_media_clothing_female</code>, <code>whip_media_props</code>, <code>whip_media_previews</code>, <code>whip_media_map</code></td><td>Media</td><td>Clothing, furniture, vehicle, NPC and tattoo pictures, emote videos and the map, kept out of whip_core so its updates stay small. They are in <code>[whip]/[assets]</code>, with the two map packs</td></tr>
 <tr><td><code>whip_homes_mirrorpark</code></td><td>Map</td><td>Every Mirror Park house as a walk-in home with its own interior, and 25 walk-in garages</td></tr>
 <tr><td><code>whip_graphics</code></td><td>Map</td><td>LED streetlights and whip's look for the city's light and sky</td></tr>
 </table>
-<p>The two map packs are built for one game each, so whip comes as two downloads that differ only in them: <strong>whip-legacy</strong> for a Legacy server and <strong>whip-enhanced</strong> for GTA V Enhanced, where they are named <code>whip_homes_mirrorpark_enhanced</code> and <code>whip_graphics_enhanced</code>.</p>
+<p>The same resources run on both games. Each map pack carries its models twice, <code>stream/</code> for Legacy and <code>stream_enhanced/</code> for GTA V Enhanced, and an Enhanced server says which it is with one line in <code>server.cfg</code> (<a href="#platform">below</a>).</p>
 <p>How the pieces fit together, for developers: <a href="#architecture">How whip is built</a>.</p>
 </div>
 
@@ -1157,48 +1157,62 @@ body.searching .main > h2 { margin-top: 56px; }
 <h2 id="quickstart">Quick Start</h2>
 
 <div>
-<p>From an empty server to your first character in game. Each step says only what to do; <a href="#running-whip">Running whip</a>, under Server Owners, explains what happens behind it and what to do when a step goes wrong.</p>
+<p>From nothing to your first character in game. whip is installed as a <strong>new server</strong>, by txAdmin: its recipe makes the whole server (the resources, the database and <code>server.cfg</code>). It is not added to a server you already have. Each step says only what to do; <a href="#running-whip">Running whip</a>, under Server Owners, explains what happens behind it and what to do when a step goes wrong.</p>
 
 <h3>1. What you need</h3>
 <ul>
-  <li><strong>A FiveM server</strong> with OneSync on, on any recent server version.</li>
-  <li><strong>MariaDB 10.2.3 or newer, or MySQL 8.0.16 or newer.</strong></li>
-  <li><strong>oxmysql</strong> in your <code>resources</code> folder, from <a href="https://github.com/overextended/oxmysql" style="color:var(--accent)">github.com/overextended/oxmysql</a>. The normal download works.</li>
+  <li><strong>FiveM's server with txAdmin</strong>, on any recent version: <strong>Legacy</strong> (the <code>FXServer</code> server) or <strong>Enhanced</strong> (the <code>cfx-server</code> server). whip runs on both.</li>
+  <li><strong>MariaDB 10.2.3 or newer, or MySQL 8.0.16 or newer</strong>, and a login that may create a database.</li>
+  <li><strong>About 1 GB of disk, and at least 10 Mbit/s to GitHub.</strong> txAdmin gives each download 150 seconds, and the largest of whip's is about 145 MB.</li>
 </ul>
 
-<h3>2. The database</h3>
-<p>Create an <strong>empty</strong> database named <code>whip</code>. That's all. whip builds every table it needs the first time it starts, and no whip resource has an SQL file to import.</p>
+<h3>2. Install whip</h3>
+<ol style="margin:8px 0 12px 20px;font-size:calc(var(--read) * 0.933);line-height:1.8">
+  <li>Start the server and open txAdmin. On its setup page choose <strong>Remote URL Template</strong> and paste the recipe for your game:</li>
+</ol>
+<pre><code><span class="cm"># Legacy</span>
+https://raw.githubusercontent.com/WHIPFX/txAdmin-recipe/main/whip-legacy.yaml
 
-<pre><code>CREATE DATABASE whip;</code></pre>
+<span class="cm"># Enhanced</span>
+https://raw.githubusercontent.com/WHIPFX/txAdmin-recipe/main/whip-enhanced.yaml</code></pre>
+<ol start="2" style="margin:8px 0 12px 20px;font-size:calc(var(--read) * 0.933);line-height:1.8">
+  <li>Give it your server key (from <a href="https://portal.cfx.re" style="color:var(--accent)">portal.cfx.re</a>) and your database login. txAdmin downloads each whip resource at its release, and oxmysql; makes an <strong>empty</strong> database (whip builds every table it needs the first time it starts, and no whip resource has an SQL file to import); turns OneSync on; writes <code>server.cfg</code>; and makes your txAdmin account an admin.</li>
+  <li>Start the server.</li>
+</ol>
 
-<h3>3. server.cfg</h3>
-<p>Take the download for your server, <strong>whip-legacy</strong> (FXServer) or <strong>whip-enhanced</strong> (cfx-server), put its <code>[whip]</code> folder in your <code>resources</code> folder, then add these lines to <code>server.cfg</code>:</p>
-<pre><code><span class="cm"># Database connection</span>
-<span class="kw">set</span> mysql_connection_string <span class="str">"mysql://root:password@localhost/whip"</span>
-
-<span class="kw">ensure</span> oxmysql
-<span class="kw">ensure</span> [whip]    <span class="cm"># every resource in the folder: whip_core, its satellites, the picture packs</span>
+<h4 id="quickstart-cfg">The server.cfg it writes</h4>
+<pre><code><span class="kw">sv_licenseKey</span> <span class="str">"your key"</span>
+<span class="kw">set</span> mysql_connection_string <span class="str">"mysql://user:password@localhost/whip_1A2B3C"</span>
 
 <span class="cm"># Legacy only: the game build whip's car, prop and clothing lists are made for (or newer)</span>
 <span class="kw">sv_enforceGameBuild</span> 3407
 
-<span class="cm"># The admin tools (/w and /whip) for you: join, type /w, and the console prints this line with your licence</span>
-<span class="kw">add_ace</span> identifier.license:xxxx whip.devtools allow</code></pre>
+<span class="kw">ensure</span> oxmysql
+<span class="kw">ensure</span> [whip]    <span class="cm"># whip_core, its satellites, the media packs and the map packs</span>
 
-<p>The order inside <code>[whip]</code> doesn't matter; only <code>oxmysql</code> has to come before it. If your <code>server.cfg</code> starts FiveM's own <code>chat</code>, <code>spawnmanager</code> or <code>basic-gamemode</code>, take those lines out: whip has its own.</p>
+<span class="cm"># The admin tools (/w and /whip) for everyone in group.admin, which your txAdmin account is in</span>
+<span class="kw">add_ace</span> group.admin whip.devtools allow
+<span class="kw">add_principal</span> identifier.fivem:1234567 group.admin</code></pre>
 
-<p id="platform"><strong>On an Enhanced server</strong> (the <code>cfx-server</code> server), add two more lines. A Legacy server (<code>FXServer</code>) needs neither.</p>
+<p>The order inside <code>[whip]</code> doesn't matter; only <code>oxmysql</code> has to come before it. Your own resources go after it. FiveM's own <code>chat</code>, <code>spawnmanager</code> and <code>basic-gamemode</code> are not installed: whip has its own.</p>
+
+<p id="platform"><strong>On an Enhanced server</strong> (the <code>cfx-server</code> server) the recipe writes two other lines in place of <code>sv_enforceGameBuild</code>:</p>
 <pre><code><span class="kw">setr</span> whip_platform enhanced
 <span class="kw">set</span> sv_resourceFileDownloadTimeout 600000</code></pre>
-<p>The first tells whip it is on Enhanced. It must be <code>setr</code>, not <code>set</code>, so that players' games get it too. The second gives a player on a slow connection long enough to download the picture packs.</p>
+<p>The first tells whip, and the map packs' scripts, that it is on Enhanced. It must be <code>setr</code>, not <code>set</code>, so that players' games get it too. The second gives a player on a slow connection long enough to download the media packs.</p>
 
-<h3>4. Check it works</h3>
+<h3 id="quickstart-check">3. Check it works</h3>
 <ol style="margin:8px 0 12px 20px;font-size:calc(var(--read) * 0.933);line-height:1.8">
   <li>Start the server. A few seconds after <code>Framework loaded successfully!</code>, the console prints a <strong>whip setup</strong> block: what whip found, and a line marked FIX for anything you need to change, with the line that fixes it. Type <code>whipsetup</code> in the server console to see it again.</li>
   <li>Join the server. You should see the character screen. Make a character, and the appearance creator opens.</li>
-  <li>Make yourself an admin: type <strong>/w</strong>, and the server console prints your <code>add_ace</code> line. Type it into the console (it works at once), and put it in <code>server.cfg</code> to keep it.</li>
+  <li>You are an admin already: the recipe put your txAdmin account in <code>group.admin</code>. For another admin, they type <strong>/w</strong>, and the server console prints their <code>add_ace</code> line. Type it into the console (it works at once), and put it in <code>server.cfg</code> to keep it.</li>
   <li>In game, <strong>F2</strong> opens the inventory and <strong>Tab</strong> shows the hotbar. <strong>/w</strong> has the quick tools (noclip, coordinates) and <strong>/whip</strong> opens the admin panel.</li>
 </ol>
+
+<h3 id="updating">Updating</h3>
+<p>Each whip resource is released on its own, on its GitHub page. Read <code>whip_core/CHANGELOG.md</code> first. Then stop the server and replace the resource's folder with the new release's (<strong>Source code (zip)</strong> on its releases page). The database is left as it is: whip_core changes its tables to match on the next start.</p>
+<p>What the server wrote into the old folder is yours to carry over: the Director packs you exported (<code>whip_core/pack_exports</code>), pictures taken in game (<code>img/props</code> in <code>whip_media_props</code>, <code>img/vehicles</code> in <code>whip_media_previews</code>) and the engine list from <code>/whiplashengines</code> (<code>whip_autos/engines.json</code>).</p>
+
 <p>Next: <a href="#configuration">Server Owners</a> for the settings and admin tools, or <a href="#first-resource">Your First Resource</a> to build something.</p>
 </div>
 
@@ -8106,7 +8120,7 @@ This is invisible if you read stats through <code>GetVehicleStat</code>, <code>G
 <div class="export-card" data-search="getvehiclecatalog vehicle catalog model display name class image list dealership">
 <div class="export-header"><span class="export-name">GetVehicleCatalog()</span><span class="export-side side-server">SERVER</span></div>
 <div class="export-body">
-  <p>The whole vehicle catalog, keyed by model. Each row carries the model's display name, its vehicle class, and whether it has a picture. The cars come from <code>server/vehicle_catalog_list.lua</code> (930 of them, each a model, a class and a name): each start adds the ones the database does not have yet. A car has a picture when its <code>img/vehicles/&lt;model&gt;.webp</code> is in whip_assets. A car pack adds its own with <a href="#registervehicles"><code>RegisterVehicles</code></a>, with no edit to whip.</p>
+  <p>The whole vehicle catalog, keyed by model. Each row carries the model's display name, its vehicle class, and whether it has a picture. The cars come from <code>server/vehicle_catalog_list.lua</code> (930 of them, each a model, a class and a name): each start adds the ones the database does not have yet. A car has a picture when its <code>img/vehicles/&lt;model&gt;.webp</code> is in a media pack. A car pack adds its own with <a href="#registervehicles"><code>RegisterVehicles</code></a>, with no edit to whip.</p>
   <div class="return-info"><strong>Returns: </strong><code>table</code>: <code>{ [model] = { model, displayName, class, hasImage, image, inGame } }</code>, a copy; <code>hasImage</code> is <code>true</code>/<code>false</code> and <code>image</code> is the picture's URL for your NUI (<code>false</code> when there is none), so there is no path to build yourself; <code>inGame</code> is <code>VehicleModelExists</code>' answer (leave <code>inGame == false</code> out of anything you sell)</div>
   <pre><code><span class="kw">local</span> catalog = <span class="fn">exports.whip_core</span>:<span class="fn">GetVehicleCatalog</span>()
 <span class="kw">local</span> row = catalog[<span class="str">'sultan'</span>]
@@ -8116,7 +8130,7 @@ This is invisible if you read stats through <code>GetVehicleStat</code>, <code>G
 <div class="export-card" id="registervehicles" data-search="registervehicles add-on cars car pack vehicle pack catalog picture dealership sell">
 <div class="export-header"><span class="export-name">RegisterVehicles(list)</span><span class="export-side side-server">SERVER</span></div>
 <div class="export-body">
-  <p>A car pack's cars in the catalog while the pack runs: named, classed and pictured everywhere the catalog is read (the dealership sells them, the vehicle wizard offers them, garages name them), with no edit to whip_core or whip_assets. The list is the pack's whole list: a car left out of a later call goes, and all of them go when the pack stops. A model whip already lists keeps its name and class and takes your picture. Put the pictures in your resource and list them in its <code>files { }</code>, or the page cannot load them.</p>
+  <p>A car pack's cars in the catalog while the pack runs: named, classed and pictured everywhere the catalog is read (the dealership sells them, the vehicle wizard offers them, garages name them), with no edit to whip_core or the media packs. The list is the pack's whole list: a car left out of a later call goes, and all of them go when the pack stops. A model whip already lists keeps its name and class and takes your picture. Put the pictures in your resource and list them in its <code>files { }</code>, or the page cannot load them.</p>
   <pre><code><span class="fn">Whip.register</span>(<span class="kw">function</span>()
     <span class="fn">exports.whip_core</span>:<span class="fn">RegisterVehicles</span>({
         { model = <span class="str">'mypack_gt'</span>,   name = <span class="str">'Velo GT'</span>,   class = <span class="str">'sports'</span>, image = <span class="str">'img/mypack_gt.webp'</span> },
@@ -8129,10 +8143,10 @@ This is invisible if you read stats through <code>GetVehicleStat</code>, <code>G
 <div class="export-card" data-search="getvehicleimage vehicle image url nui webp picture">
 <div class="export-header"><span class="export-name">GetVehicleImage(model)</span><span class="export-side side-server">SERVER</span></div>
 <div class="export-body">
-  <p>The URL for a vehicle's picture, usable from any resource's NUI: the pictures live on disk in whip_assets and are served over <code>cfx-nui</code>, so the browser caches them like any other asset. <code>nil</code> when the model has no picture, like every lookup.</p>
+  <p>The URL for a vehicle's picture, usable from any resource's NUI: the pictures live on disk in a media pack (<code>whip_media_previews</code>) and are served over <code>cfx-nui</code>, so the browser caches them like any other asset. <code>nil</code> when the model has no picture, like every lookup.</p>
   <table class="param-table"><tr><th>Param</th><th>Type</th><th>Description</th></tr>
   <tr><td>model</td><td>string</td><td>Model name; matched case-insensitively</td></tr></table>
-  <div class="return-info"><strong>Returns: </strong><code>string|nil</code>: e.g. <code>https://cfx-nui-whip_assets_4/img/vehicles/sultan.webp</code> (vehicle pictures live in a <code>whip_assets_N</code> resource)</div>
+  <div class="return-info"><strong>Returns: </strong><code>string|nil</code>: e.g. <code>https://cfx-nui-whip_media_previews/img/vehicles/sultan.webp</code> (vehicle pictures live in a media pack)</div>
   <pre><code><span class="kw">local</span> url = <span class="fn">exports.whip_core</span>:<span class="fn">GetVehicleImage</span>(<span class="str">'sultan'</span>)
 <span class="kw">if</span> url <span class="kw">then</span>
     <span class="cm">-- hand it to your NUI: { image = url }</span>
@@ -9652,7 +9666,7 @@ door system does the rest.</p>
 <div class="export-card" id="registerprops" data-search="registerprops add-on props prop pack mlo furniture furnisher picture">
 <div class="export-header"><span class="export-name">RegisterProps(list)</span><span class="export-side side-server">SERVER</span></div>
 <div class="export-body">
-  <p>A prop or MLO pack's props in the furnisher while the pack runs, under one of its categories, with your own pictures: no edit to <code>config.lua</code> or whip_assets. The list is the pack's whole list (one left out of a later call goes), and all go when the pack stops. A model whip already lists keeps its row and an admin's choices on it, and takes your picture. List the pictures in your resource's <code>files { }</code>.</p>
+  <p>A prop or MLO pack's props in the furnisher while the pack runs, under one of its categories, with your own pictures: no edit to <code>config.lua</code> or the media packs. The list is the pack's whole list (one left out of a later call goes), and all go when the pack stops. A model whip already lists keeps its row and an admin's choices on it, and takes your picture. List the pictures in your resource's <code>files { }</code>.</p>
   <pre><code><span class="fn">exports.whip_core</span>:<span class="fn">RegisterProps</span>({
     { model = <span class="str">'mypack_armchair'</span>, name = <span class="str">'Velvet armchair'</span>, category = <span class="str">'seating'</span>, image = <span class="str">'img/armchair.webp'</span> },
 })</code></pre>
@@ -10644,7 +10658,7 @@ The layer is named after the zone and its priority defaults to just above the zo
   <tr><td>at</td><td>table</td><td><strong>Required.</strong> Where it lives; see <a href="#interactions-at">at</a></td></tr>
   <tr><td>label</td><td>string | function(ctx)</td><td>What it says. A function is asked every time it is drawn, so it must not wait. The F1 wheel needs one</td></tr>
   <tr><td>icon</td><td>string?</td><td>A <a href="#interactions-glyphs">glyph</a> name; any other text is drawn as it is. On the F1 wheel the icon fills the slab and the centre disc. With no icon, or text longer than 3 letters, the wheel draws the label's first letter</td></tr>
-  <tr><td>image</td><td>string | function(ctx)?</td><td>World prompts only: a picture above the label, a path under whip_core's <code>html/</code>: a vehicle's is <code>'img/vehicles/&lt;model&gt;.webp'</code> (found in the <code>whip_assets_N</code> resource that holds it, where vehicle and furniture pictures live), or a full <code>https://cfx-nui-&lt;resource&gt;/…</code> URL</td></tr>
+  <tr><td>image</td><td>string | function(ctx)?</td><td>World prompts only: a picture above the label, a path under whip_core's <code>html/</code>: a vehicle's is <code>'img/vehicles/&lt;model&gt;.webp'</code> (found in the media pack that holds it, where vehicle and furniture pictures live), or a full <code>https://cfx-nui-&lt;resource&gt;/…</code> URL</td></tr>
   <tr><td>description</td><td>string | function(ctx)?</td><td>F1 wheel only: what it does, shown beside the name in the pill under the wheel while the player aims at it: <code>'Start or stop the engine'</code>. A function is asked when the wheel opens, so it must not wait</td></tr>
   <tr><td>require</td><td>table?</td><td>Who may use it; see <a href="#interactions-require">require</a></td></tr>
   <tr><td>canInteract</td><td>function(ctx)?</td><td>Your own rule on top of <code>require</code>: return <code>true</code> to offer it. Asked often, so it must not wait</td></tr>
@@ -14654,7 +14668,7 @@ set whip_voicebot_token <span class="str">"..."</span></code></pre>
 <p>The normal oxmysql works, but whip ships a small patch for it in <code>whip_core/dev/oxmysql-p001.diff</code>. Without it, a query made while the database is down can wait for ever; whip gives up on one after 65 seconds. To apply it, make the four edits the file describes to <code>oxmysql/dist/build.js</code>, and make them again after each oxmysql update. The setup report says when it is missing.</p>
 
 <h3 id="first-download">A player's first download</h3>
-<p>Most of what a player downloads the first time they join is whip's pictures and videos: about 510 MB, in 4 packs of up to 145 MB each. A pack is downloaded again only when it changes.</p>
+<p>Most of what a player downloads the first time they join is whip's pictures and videos: about 510 MB, in 5 media packs of up to 145 MB each. A pack is downloaded again only when it changes.</p>
 <p>An Enhanced server stops downloading any one file after about two minutes, which cuts off a player slower than about 1.2 MB/s partway through a pack. The <code>sv_resourceFileDownloadTimeout 600000</code> line in the Quick Start raises that to ten minutes. Legacy has no such limit.</p>
 
 <h3>Legacy and Enhanced</h3>
@@ -15235,8 +15249,8 @@ Whip.<span class="fn">playerSetting</span>({
 
 <div class="info-box tip"><strong>Handoffs are deliberate.</strong> Flows that need the game screen (the zone/door editors, UI Library demos, Lua-side confirms) <em>suspend</em> the panel (it hides, keys go to the game, it comes back where you left it). Flows that open the inventory (Player Manager's "Open Inventory", a container's "Open", vehicle storage) <em>close</em> the panel: the inventory is its own world.</div>
 
-<p><strong>Vehicle and furniture pictures</strong> are made outside the game and come in the packs: a car's is <code>img/vehicles/&lt;model&gt;.webp</code> in <code>whip_assets_4</code>, a prop's is <code>img/props/&lt;model&gt;.webp</code> in <code>whip_assets_3</code>. Players receive a new picture when you restart its pack; whip_core reads which ones exist at its own start.</p>
-<p><strong>Where whip's pictures are.</strong> whip's pictures, videos and map files are split into resources of at most 256 MB each, by category, so a player downloads each once, and again only when that one changes: <code>whip_assets_1</code> the male body's clothing pictures, <code>whip_assets_2</code> the female body's (the character editor's names for them, and the list of which clothing has a picture, are whip_core's own, so they still work when the pictures are not running), <code>whip_assets_3</code> the furniture pictures, <code>whip_assets_4</code> the small ones (vehicles, NPCs, tattoos, blips, emote previews, the map). They start in any order, before or after <code>whip_core</code>; whip's setup report says when one is missing. A category that outgrows its resource carries on in a new <code>whip_assets_5</code>; after moving files between them, run <code>node whip_core/dev/assets_index.mjs</code>, which writes the index whip reads (and warns when one passes 256 MB).</p>
+<p><strong>Vehicle and furniture pictures</strong> are made outside the game and come in the packs: a car's is <code>img/vehicles/&lt;model&gt;.webp</code> in <code>whip_media_previews</code>, a prop's is <code>img/props/&lt;model&gt;.webp</code> in <code>whip_media_props</code>. Players receive a new picture when you restart its pack; whip_core reads which ones exist at its own start.</p>
+<p><strong>Where whip's pictures are.</strong> whip's pictures, videos and map files are split into media packs of at most 256 MB each, by category, so a player downloads each once, and again only when that one changes: <code>whip_media_clothing_male</code> the male body's clothing pictures, <code>whip_media_clothing_female</code> the female body's (the character editor's names for them, and the list of which clothing has a picture, are whip_core's own, so they still work when the pictures are not running), <code>whip_media_props</code> the furniture pictures, <code>whip_media_previews</code> the vehicles, NPCs, tattoos and emote previews, <code>whip_media_map</code> the map, its blip icons and the minimap's tiles. They start in any order, before or after <code>whip_core</code>; whip's setup report says when one is missing. A category that outgrows its pack carries on in a new one (<code>whip_media_props_2</code>); after moving files between packs, adding one or renaming one, run <code>node whip_core/dev/assets_index.mjs</code>, which writes the index whip reads (and warns when one passes 256 MB).</p>
 
 <h3>ACE Permission</h3>
 <p>Both <code>/w</code> and <code>/whip</code> are gated behind the <code>whip.devtools</code> ACE permission. Without it the commands do nothing, and every mutation behind every section is independently ACE-checked server-side, which is the real wall. One exception: a player given a whip <a href="#permissions">permission</a> that opens a section (Director access, say) opens <code>/whip</code> with only that section.</p>
