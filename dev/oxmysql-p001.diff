@@ -1,0 +1,80 @@
+whip's patch to oxmysql (P-001, 2 Oct 2026). Not loaded by fxmanifest.lua.
+
+When oxmysql cannot get a connection (the database is down or restarting) the error from
+`await using connection = await getConnection()` escapes its query, execute, transaction and
+startTransaction functions as a rejected promise nobody awaits, so the caller is never answered: a
+Lua MySQL.*.await waits for ever and Node prints an unhandled rejection. Every other failure there
+answers through logError; this one was missed. Seen in Josh's outage test on 2 Oct 2026; upstream
+master (src/database/rawQuery.ts, connection.ts) had the same code that day.
+
+The patch answers that case as an error, the way oxmysql already answers a bad query. Safe: the
+query never reached the database. Whip's db_guard.lua (65 s) stays as the backstop, and whip_core
+says at start-up when this patch is missing (an oxmysql update replaces dist/build.js).
+
+To re-apply after an update: make the same four edits in [deps]/oxmysql/dist/build.js — wrap each
+`await getConnection(...)` in rawQuery, rawExecute, rawTransaction and startTransaction in a
+try/catch that returns logError(...), keeping the marker comment. Line numbers move between
+versions; the code around them does not.
+
+--- oxmysql 2.12.0 dist/build.js (upstream)
++++ oxmysql 2.12.0 dist/build.js (whip P-001 patch)
+@@ -26027,7 +26027,13 @@
+     } catch (err) {
+       return logError(invokingResource, cb, isPromise, err, query, parameters);
+     }
+-    const connection = __using(_stack, await getConnection(connectionId));
++    let connection;
++    try {
++      connection = __using(_stack, await getConnection(connectionId));
++    } catch (err) {
++      // whip P-001 patch: no connection answers as an error. Upstream lets it escape to a promise nobody awaits, so the caller is never answered.
++      return logError(invokingResource, cb, isPromise, err, query, parameters);
++    }
+     if (!connection) return;
+     try {
+       const hasProfiler = await runProfiler(connection, invokingResource);
+@@ -26118,7 +26124,13 @@
+     } catch (err) {
+       return logError(invokingResource, cb, isPromise, err, query, parameters);
+     }
+-    const connection = __using(_stack, await getConnection(connectionId));
++    let connection;
++    try {
++      connection = __using(_stack, await getConnection(connectionId));
++    } catch (err) {
++      // whip P-001 patch: no connection answers as an error. Upstream lets it escape to a promise nobody awaits, so the caller is never answered.
++      return logError(invokingResource, cb, isPromise, err, query, parameters);
++    }
+     if (!connection) return;
+     try {
+       const hasProfiler = await runProfiler(connection, invokingResource);
+@@ -26216,7 +26228,13 @@
+     } catch (err) {
+       return logError(invokingResource, cb, isPromise, err);
+     }
+-    const connection = __using(_stack, await getConnection());
++    let connection;
++    try {
++      connection = __using(_stack, await getConnection());
++    } catch (err) {
++      // whip P-001 patch: no connection answers as an error. Upstream lets it escape to a promise nobody awaits, so the caller is never answered.
++      return logError(invokingResource, cb, isPromise, err);
++    }
+     if (!connection) return;
+     let response = false;
+     try {
+@@ -26302,7 +26320,13 @@
+ var startTransaction = /* @__PURE__ */ __name(async (invokingResource, queries, cb, isPromise) => {
+   var _stack = [];
+   try {
+-    const conn = __using(_stack, await getConnection());
++    let conn;
++    try {
++      conn = __using(_stack, await getConnection());
++    } catch (err) {
++      // whip P-001 patch: no connection answers as an error. Upstream lets it escape to a promise nobody awaits, so the caller is never answered.
++      return logError(invokingResource, cb, isPromise, err);
++    }
+     let response = false;
+     let closed = false;
+     if (!conn) return;

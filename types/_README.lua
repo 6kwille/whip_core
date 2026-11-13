@@ -1,0 +1,50 @@
+-- ============================================
+-- whip_core — LuaLS Type Annotations
+-- ============================================
+--
+-- These files provide autocomplete, parameter hints, and return
+-- type inference for all whip_core exports when using the
+-- Lua Language Server extension in VS Code (or any LuaLS editor).
+--
+-- FILES:
+--   classes.lua          — Shared type definitions (WhipPlayer, WhipItemDef, etc.)
+--   server.lua           — Server-side export signatures
+--   client.lua           — Client-side export signatures
+--   events.lua           — Every event whip fires, with its payload type (and old name)
+--   director.lua         — The Director API's shapes (DirectorRunView, DirectorScenarioView, its events)
+--   satellite.lua        — The Whip.* helper from '@whip_core/lib/satellite.lua'
+--   luarc.template.json  — The .luarc.json you copy into your own resource (step 2)
+--
+-- COVERAGE: these stubs cover the full export surface, client and
+-- server — every export except the __Test* seams in server/testseams.lua, which are
+-- excluded on purpose. When you add an export to whip, add its stub here in the same
+-- change; that is the only thing that keeps this list from rotting.
+--
+-- SETUP (for your resource):
+--   1. Install the "Lua" extension by sumneko in VS Code
+--   2. Copy luarc.template.json to your resource root as .luarc.json
+--   3. It finds these types next to your resource (../whip_core/types) or next to a [whip] folder
+--      (../[whip]/whip_core/types); for any other layout, change the path in workspace.library
+--   4. Open your resource folder in VS Code — autocomplete is now active
+--   For FiveM's natives, add a natives extension too (CfxLua IntelliSense, for one): these files cover whip only.
+--
+-- USAGE:
+--   local player = exports.whip_core:GetPlayer(source)
+--   player.charId       -- autocomplete shows all WhipPlayer fields
+--   -- (a player sheet has fields only, no methods: act through exports such as AddPlayerCash)
+--
+--   local where, err = exports.whip_core:AddItem(source, 'drink', 2)
+--   -- editor shows: (source: number, item: string, amount?: number, metadata?: table, opts?: string|WhipAddItemOpts)
+--   --               -> 'inventory'|'ground'|false, string|nil
+--
+--   local passed, why = exports.whip_core:SkillCheck('hard')
+--   -- editor shows: (difficulty?: WhipSkillDifficulty|{ difficulty }) -> boolean, string|nil
+--
+-- FULL DOCS:
+--   See whip_core/docs.html for the complete API reference with
+--   guides, examples, and interactive search.
+--
+-- NOTE:
+--   These files contain NO runtime code. They are purely for
+--   editor tooling and can be safely ignored by FiveM.
+-- ============================================
