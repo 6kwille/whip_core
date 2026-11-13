@@ -22,7 +22,7 @@ const SHIP = [
     'whip_phone', 'whip_rope', 'whip_voice',
     ...Array.from({ length: 4 }, (_, i) => `whip_assets_${i + 1}`),
 ];
-const MAPS = ['whippy_mirror_park_homes', 'whippy_led_streetlights'];
+const MAPS = ['whippy_mirror_park_homes', 'whip_graphics'];
 
 const [out, platform, enhancedMaps] = process.argv.slice(2);
 const usage = () => {

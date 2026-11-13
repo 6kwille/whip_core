@@ -29,7 +29,7 @@ License Agreement. whip's licence does not cover them:
 - the car makers' logos in whip_core/html/img/manufacturers;
 - the game's names and data in whip's lists (weapons, peds, tattoos, voice lines, props, blips);
 - the map files in whip_autos_shop, and the map packs shipped beside whip (whippy_mirror_park_homes,
-  whippy_led_streetlights).
+  whip_graphics).
 
 whip is not affiliated with, endorsed or sponsored by Rockstar Games or Take-Two Interactive.
 
