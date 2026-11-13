@@ -25,8 +25,11 @@ local VIDEOS = {}   -- the folders a video may be in
 if arg[3] then
     VIDEOS[1] = arg[3]:gsub('[/\\]$', '') .. '\\'
 else
-    -- whip_media_previews holds the videos: beside whip_core, or in [whip]\[assets] with the other media packs
-    for _, pack in ipairs({ 'whip_media_previews', '[assets]\\whip_media_previews' }) do
+    -- whip_media_previews holds the videos: beside whip_core, or with the other media packs in [whip]\[assets]
+    -- or [whip]\[assets]\[media]
+    for _, pack in ipairs({
+        'whip_media_previews', '[assets]\\whip_media_previews', '[assets]\\[media]\\whip_media_previews',
+    }) do
         VIDEOS[#VIDEOS + 1] = ('%s\\..\\..\\%s\\video\\emotes\\'):format(HERE, pack)
     end
 end

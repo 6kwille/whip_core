@@ -1,8 +1,8 @@
 // assets_dirs — where an area of whip's media is on disk, across the media packs: the dev tools' half of
 // shared/assets.lua. A media pack is a resource whose fxmanifest.lua says `whip_media_pack 'yes'` (whip_media_props,
-// whip_media_map, ...), beside whip_core or in a [category] folder there ([whip]/[assets]). An area ('img/props',
-// 'video/emotes') is in one of them, or split over several in runs of names (dev/assets_index.mjs). A tool that writes
-// into an area asks assetDir; one that reads all of a split area asks assetDirs.
+// whip_media_map, ...), beside whip_core or in [category] folders there, however deep ([whip]/[assets]/[media]). An
+// area ('img/props', 'video/emotes') is in one of them, or split over several in runs of names (dev/assets_index.mjs).
+// A tool that writes into an area asks assetDir; one that reads all of a split area asks assetDirs.
 //
 //   const { assetDir, assetDirs } = require('./assets_dirs.js');                 // CommonJS
 //   import assets from './assets_dirs.js'; const { assetDir } = assets;          // from an .mjs
