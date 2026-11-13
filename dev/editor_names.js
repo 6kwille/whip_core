@@ -9,7 +9,7 @@
 // null where the game has no name; the card then shows its number. Tattoos' names are not here: they
 // are in shared/tattoo_list.lua (dev/tattoo_list.js).
 //
-// In whip_core (Josh, 30 Oct 2026), not with the pictures: the names show even when a whip_assets_N is not
+// In whip_core (Josh, 30 Oct 2026), not with the pictures: the names show even when a media pack is not
 // running. It costs 1.5 MB more in every whip_core download. A classic script rather than JSON, loaded
 // the first time the editor opens (html/js/creator.js loadNames).
 //

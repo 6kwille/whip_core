@@ -368,7 +368,7 @@ function maxOverlayTypes(key) {
 }
 
 // ========================================
-// CLOTHING PICTURES (whip_assets/img/clothing)
+// CLOTHING PICTURES (img/clothing in whip_media_clothing_male and _female)
 //
 // maxVariations.icons names every card's item ('<collection>_<item>', asked
 // of the game: client/appearance.lua, clothingIcons). A card shows its
@@ -511,7 +511,7 @@ function iconImg(src) {
 // collections = [ { name, label } ]. appearance.tattoos is what is worn, { collection, overlay } in the
 // order put on. A card's value is its place in its part's list, its number that place + 1 (numbers
 // move when a game update adds tattoos before it, as the clothing numbers do: the save keeps names).
-// A card is the tattoo's picture (whip_assets/img/tattoos, 3D Clanker's flash cards) and its name; one
+// A card is the tattoo's picture (whip_media_previews/img/tattoos, 3D Clanker's flash cards) and its name; one
 // with no picture keeps the anchor, one with no name (the base game's) its number. No band (renderOptions).
 // ========================================
 

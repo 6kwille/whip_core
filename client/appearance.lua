@@ -658,7 +658,7 @@ startCamLoop = function()
     CreateThread(camLoop)
 end
 
--- Clothing pictures (whip_assets/img/clothing)
+-- Clothing pictures (img/clothing in whip_media_clothing_male and _female)
 -- Pictures are named by collection and the item's number inside it, because a card's global number moves
 -- when a pack adds items:  img/clothing/male/11_tops/male_11_mp_m_vinewood_004_00.webp
 -- Each card's name is asked of the game once per creator open and the page builds the path from it.
@@ -702,12 +702,12 @@ local function clothingIcons(ped)
 end
 
 -- Which items have a picture, per body (server/clothing_pictures.lua): the editor hides items without one.
--- Asked the first time a body's editor opens, kept until a whip_assets_N restarts.
+-- Asked the first time a body's editor opens, kept until a media pack restarts.
 -- No answer: nothing is hidden, and the next open asks again.
 local picturesFor = {}   -- ['male'|'female'] = { components = { ['11'] = { base = '0-15,...' } }, props = {...} }
 local picturesAsked = {}
 
--- Forgotten on a whip_assets_N restart, so the next open asks again.
+-- Forgotten on a media pack restart, so the next open asks again.
 AddEventHandler('onClientResourceStart', function(res)
     if WhipAssets.isAsset(res) then picturesFor = {} end
 end)

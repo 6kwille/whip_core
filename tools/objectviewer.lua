@@ -197,7 +197,7 @@ local function unsigned(h)
 end
 
 -- WHAT THE GAME WILL NOT NAME, WHIP CAN. GTA V Enhanced answers GetEntityArchetypeName for some models only (a map's
--- own props) and nothing for the rest, so they showed as their hash. whip_assets has a picture of every prop, car and
+-- own props) and nothing for the rest, so they showed as their hash. The media packs have a picture of every prop, car and
 -- ped the Director places, each named by its model, and html/js/picture-bounds.js lists them all with the box round
 -- what is drawn in each: read once, that list names a hash, and gives the card its picture (fitted as the Director
 -- fits it, utils.js fitPicture). Read on first use and kept.
@@ -243,7 +243,7 @@ local function knownName(entity)
     return nil
 end
 
---- The card's picture: a whip_assets_N's own of this model (a car, an NPC, a prop), or nil (the kind's glyph then).
+--- The card's picture: a media pack's own of this model (a car, an NPC, a prop), or nil (the kind's glyph then).
 --- Never for a player: their model's picture is not what they look like.
 local function pictureOf(entity, kind)
     if kind == 'ped' and IsPedAPlayer(entity) then return nil end

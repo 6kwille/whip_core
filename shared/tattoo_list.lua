@@ -6,7 +6,7 @@
 -- names in dev/tattoo_names.json; run it again rather than editing this by hand. 1492 tattoos:
 -- 744 for the male body, 747 for the female, 1 for both; 1351 with a name. Badges,
 -- Michael's, Franklin's and Trevor's, hair fades and the crew tattoos are left out (see the script).
--- Each has a picture in whip_assets/img/tattoos/<overlay name, lower case>.webp.
+-- Each has a picture in whip_media_previews/img/tattoos/<overlay name, lower case>.webp.
 --
 -- The dump is of the newest game, so the editor asks the game about each tattoo and offers only the
 -- ones this game build has (client/appearance.lua, tattoosFor); the server takes only a tattoo named

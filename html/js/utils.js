@@ -5,7 +5,7 @@
 import { getItemDefs, noteItemIconMissing, itemIconIsMissing } from './core/item-defs.js';
 import { whenMet, amountMet, fillImagePath } from './core/item-rules.js';
 import { NuiRouter } from './router.js';
-// Which whip_assets_N holds each picture (plain scripts: the index first, then its asking, whipAssetUrl)
+// Which media pack holds each picture (plain scripts: the index first, then its asking, whipAssetUrl)
 import './assets-index.js';
 import './assets.js';
 
@@ -139,11 +139,11 @@ export function setItemImage(img, slotData) {
     }
 }
 
-// ---- Vehicle and furniture pictures, emote videos: the whip_assets_N resources ----
+// ---- Vehicle and furniture pictures, emote videos: the media packs ----
 //
 // Not in whip_core: players download a resource again in full whenever anything in it changes, and
 // these hundreds of MB hardly ever change while whip_core changes all the time. So they live in their
-// own resources, whip_assets_1 and on (at most 256 MB each, by category), and are loaded from them by
+// own resources, the media packs (at most 256 MB each, by category), and are loaded from them by
 // absolute URL, the cross-resource way theme.js and the satellites' item icons already use. Which one
 // holds a file is js/assets.js's to say (whipAssetUrl). If it is not running they simply fail to load: a
 // vehicle shows the missing.png stand-in (still in whip_core), a furniture tile is blank, and the
@@ -154,7 +154,7 @@ export function assetUrl(path) {
 
 // ---- Where a vehicle's picture lives ----
 //
-// img/vehicles/<model>.webp in its whip_assets_N (rendered outside the game). Simpler than the
+// img/vehicles/<model>.webp in its media pack (rendered outside the game). Simpler than the
 // item case above: vehicle models are a game-wide namespace rather than something a resource
 // registers, so there is no per-resource ownership to resolve.
 //
@@ -207,7 +207,7 @@ function pictureBounds() {
 }
 
 /**
- * Fit what is drawn in a whip_assets picture to its <img>'s box, once the picture and the bounds are in.
+ * Fit what is drawn in a media pack's picture to its <img>'s box, once the picture and the bounds are in.
  * The img says what it is: data-fit (prop, vehicle, npc) and data-model; data-fit-head: a ped's head and
  * shoulders only; data-fit-pad: the room left round it, a fraction of the box (0.04 if not said).
  * @param {HTMLImageElement} img
@@ -259,7 +259,7 @@ export function emoteVideoUrl(video) {
     return assetUrl('video/emotes/' + video);
 }
 
-// ---- Clothing pictures: img/clothing (a whip_assets_N per body) ----
+// ---- Clothing pictures: img/clothing (a media pack per body) ----
 //
 // A folder per body and slot, a file per item and colour, named by the item's GTA collection and its
 // number inside it (client/appearance.lua, clothingIcons, explains why not the card number):
@@ -296,7 +296,7 @@ export function clothingIconUrl(gender, kind, slot, name, texture) {
 
 /** The character editor's names (js/editor-names.js, written by whip_core/dev/editor_names.js): a classic
  *  script that sets window.WHIP_EDITOR_NAMES. whip_core's own, not with the pictures: the names show even when a
- *  whip_assets_N is not running. */
+ *  media pack is not running. */
 export function editorNamesUrl() {
     return 'js/editor-names.js';
 }

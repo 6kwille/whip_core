@@ -4,13 +4,13 @@
 // Made for the shop set-up wizard (wp/shops.js), and free for any section:
 //
 //   pedPicker   the world builder's NPCs (builder-peds.js: every ped with a picture in
-//               whip_assets/img/peds — the list the Director's World tab places from), with its
+//               whip_media_previews/img/peds — the list the Director's World tab places from), with its
 //               search and categories, the pictures as tiles, and the one picked shown large.
 //   itemList    the Item Browser's list (wp/items.js): a resource filter, a search, a row per item
 //               with its icon. Rows are picked and unpicked; the caller keeps what is picked.
 //   pedPortrait an NPC's picture, large (the picker's side; a shop's page).
 //   propPicker  the furnisher's props (Furnisher.catalog), the NPC picker's way: a chip per
-//               category, the pictures as tiles (whip_assets/img/props), the one picked large; and
+//               category, the pictures as tiles (whip_media_props/img/props), the one picked large; and
 //   propPortrait  a prop's picture, large (a container's page; the container wizard).
 //   personSearch / avatar   find a character by name; their initials in a disc (the job wizard).
 //   vehiclePicker / vehiclePortrait   every vehicle the catalog has, a chip per class, wide pictures (the
@@ -367,7 +367,7 @@ function carGlyph() {
     return (g && g.car) || GLYPHS.car;
 }
 
-/** A vehicle's picture, large and wide (whip_assets' snapshots): the picker's side. The car glyph if none. */
+/** A vehicle's picture, large and wide (the media packs' snapshots): the picker's side. The car glyph if none. */
 export function vehiclePortrait(model, hasImage) {
     const hero = WP.el('div', 'wp-pick-hero wp-hero-wide');
     if (model && hasImage !== false) hero.appendChild(picture(vehicleImageUrl(model), hero));
@@ -879,7 +879,7 @@ export const BLIP_COLOURS = [
 
 /** The map's own way of colouring a blip (pause-map.js tint): the white icon's brightness times the
  *  colour, as an SVG filter (#wp-blip-tint) the icons name. A CSS mask would be simpler and draws nothing in
- *  the game: whip_assets is another origin, and a mask needs an image it is allowed to read. */
+ *  the game: a media pack is another origin, and a mask needs an image it is allowed to read. */
 export function blipTintFilter(hex) {
     const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
     const row = (c) => [0.2126 * c, 0.7152 * c, 0.0722 * c, 0, 0].map((v) => v.toFixed(4)).join(' ');

@@ -2,14 +2,14 @@
 //
 // The character editor shows apparel and accessories only where there is a picture (GTA's lists carry
 // items that do not exist, and those have none). Knowing which means listing img/clothing/<body> (a
-// whip_assets_N each: dev/assets_dirs.js finds them), and FXServer's Lua cannot list a folder. This lists
+// media pack each: dev/assets_dirs.js finds them), and FXServer's Lua cannot list a folder. This lists
 // them once, here, and whip_core reads the answer (server/clothing_pictures.lua) when it starts and
-// whenever a whip_assets_N does. A server-side JavaScript file doing it at every start made FXServer
+// whenever a media pack does. A server-side JavaScript file doing it at every start made FXServer
 // enter whip_core every server frame for good. The list is whip_core's own, so the editor shows only
-// real items even when their pictures' whip_assets_N is not running.
+// real items even when their pictures' media pack is not running.
 //
 // RUN IT AGAIN after adding, removing or renaming clothing pictures (double-click "Rebuild clothing
-// picture list.bat" in whip_assets_1), then restart whip_core: it reads the new list then.
+// picture list.bat" in whip_media_clothing_male), then restart whip_core: it reads the new list then.
 //
 // What it writes:
 //   { files, made, found }
@@ -48,7 +48,7 @@ function ranges(numbers) {
 function scan() {
     const sets = {};
     let files = 0, read = 0;
-    // Each body's folder wherever it is (in more than one whip_assets_N, should it ever be split)
+    // Each body's folder wherever it is (in more than one media pack, should it ever be split)
     const places = [];
     for (const body of BODIES) for (const dir of assetDirs('img/clothing/' + body)) places.push({ body, dir });
     for (const { body, dir } of places) {
@@ -91,7 +91,7 @@ function scan() {
 
 const result = scan();
 if (!result) {
-    console.error('stopped: no whip_assets_N beside whip_core has img/clothing/male or img/clothing/female');
+    console.error('stopped: no media pack beside whip_core has img/clothing/male or img/clothing/female');
     process.exit(1);
 }
 fs.mkdirSync(path.dirname(OUT), { recursive: true });

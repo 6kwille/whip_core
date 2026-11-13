@@ -2486,7 +2486,7 @@ function whip_core:AddVehicleStat(vehicleId, name, delta, changeSource) end
 
 --- The whole vehicle catalog, as a copy: model -> { model, displayName, class, hasImage (boolean),
 --- image (its URL for a NUI, or false), inGame (VehicleModelExists' answer) }. Filled from
---- server/vehicle_catalog_list.lua; a model has a picture when its img/vehicles/<model>.webp is in whip_assets.
+--- server/vehicle_catalog_list.lua; a model has a picture when its img/vehicles/<model>.webp is in a media pack.
 ---@return table catalog
 function whip_core:GetVehicleCatalog() end
 

@@ -1,7 +1,7 @@
 // ========================================
 // THE WORLD BUILDER'S NPCs (the Director's World tab): every ped with a picture
 //
-// Generated from the pictures in whip_assets/img/peds (881 peds, one <model>.webp each), named so
+// Generated from the pictures in whip_media_previews/img/peds (881 peds, one <model>.webp each), named so
 // a person can read them: passers-by by who they are ("Indian Male #1", "Young Rockford Hills Female #2"),
 // jobs and gangs by their role ("LSPD Officer Female #1", "Ballas Male #3"), the story's people by name
 // ("Lamar Davis", "Lamar Davis #2" for his second look), animals by kind. A ped without a picture is still

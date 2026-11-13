@@ -2,12 +2,12 @@
 //
 //   node dev/map_tiles/minimap_tiles.js [size]        size: px per tile, default 4096 (GTA's own)
 //
-// Writes whip_assets/stream/whipmap_<row>_<col>.ytd (one texture each, named the same), which
+// Writes whip_media_map/stream/whipmap_<row>_<col>.ytd (one texture each, named the same), which
 // client/hud_skin.lua swaps in over GTA's minimap_sea_<row>_<col> while Config.HudSkin is 'black'.
 // Also writes whip_core/stream/whiphud.ytd: 'disc', the white circle the minimap frame's corners are.
 //
 // THE GRID IS GTA's (minimap.ymt): two columns, three rows, each 4500 m square, from (-4140, 8400) at
-// the top left; row 0 is the north. The shapes are whip_assets/map/gtav-map.js (dev/map_tiles/
+// the top left; row 0 is the north. The shapes are whip_media_map/map/gtav-map.js (dev/map_tiles/
 // svg_map.js), already in GTA world metres. THE COLOURS ARE THE PAUSE MENU'S (html/js/pause-map.js, C
 // and whipColour): change them there and here together, and bake again.
 //
@@ -21,7 +21,7 @@ const path = require('path');
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const YTDPACK = 'C:/Tools/whip/ytdpack/bin/Release/net10.0-windows/ytdpack.exe';
 const RES = path.resolve(__dirname, '..', '..', '..');
-const { assetDir } = require('../assets_dirs.js');   // the whip_assets_N holding each
+const { assetDir } = require('../assets_dirs.js');   // the media pack holding each
 const MAP_JS = path.join(assetDir('map'), 'gtav-map.js');
 const OUT_TILES = assetDir('stream');
 const OUT_HUD = path.join(RES, 'whip_core', 'stream');

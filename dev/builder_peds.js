@@ -1,24 +1,24 @@
 // builder_peds — writes html/js/builder-peds.js, the world builder's NPCs tab: every ped that has a picture
-// in whip_assets/img/peds, grouped and given a name a person can read ("Indian Male #1", "Lamar Davis").
+// in whip_media_previews/img/peds, grouped and given a name a person can read ("Indian Male #1", "Lamar Davis").
 //
 // A ped's gender (for "Male" / "Female" on a role) comes from DurtyFree's peds.json
 // (github.com/DurtyFree/gta-v-data-dumps; game build 3407 when this was written), downloaded anywhere.
 //
 // Usage:  node dev/builder_peds.js <peds.json> [pictures folder] [out file]
-//   The pictures default to ..\..\whip_assets\img\peds, the out file to ..\html\js\builder-peds.js.
+//   The pictures default to the media pack holding img/peds (dev/assets_dirs.js), the out file to ..\html\js\builder-peds.js.
 //   A new picture needs its name below (AMBIENT, ROLE, CHAR or ANIMAL): the script stops and lists any
 //   it cannot name, and any two that would share a name. Not loaded by fxmanifest.lua.
 const fs = require('fs');
 const path = require('path');
 if (!process.argv[2]) { console.error('usage: node builder_peds.js <peds.json> [pictures folder] [out file]'); process.exit(2); }
 const peds = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-const PICTURES = process.argv[3] || require('./assets_dirs.js').assetDir('img/peds');   // in its whip_assets_N
+const PICTURES = process.argv[3] || require('./assets_dirs.js').assetDir('img/peds');   // in its media pack
 const OUT = process.argv[4] || path.join(__dirname, '..', 'html', 'js', 'builder-peds.js');
 const byModel = {};
 for (const p of peds) byModel[String(p.Name).toLowerCase()] = p;
 
 // ---- never shipped: the Altruist cult peds are nude. Their pictures are not in
-// whip_assets and they are never listed; a picture of one found here is left out and named, to be deleted.
+// the media packs and they are never listed; a picture of one found here is left out and named, to be deleted.
 const NOT_SHIPPED = /^a_[mf]_[ymo]_(acult|fatcult)(_\d+)?$/;
 
 // ---- passers-by (a_m_*, a_f_*): "[Young|Old] <who> <Male|Female> #n" ------------------------------
@@ -318,7 +318,7 @@ rows.sort((a, b) => TAB_ORDER.indexOf(a[1]) - TAB_ORDER.indexOf(b[1]) || a[2].lo
 const out = `// ========================================
 // THE WORLD BUILDER'S NPCs (the Director's World tab): every ped with a picture
 //
-// Generated from the pictures in whip_assets/img/peds (${rows.length} peds, one <model>.webp each), named so
+// Generated from the pictures in whip_media_previews/img/peds (${rows.length} peds, one <model>.webp each), named so
 // a person can read them: passers-by by who they are ("Indian Male #1", "Young Rockford Hills Female #2"),
 // jobs and gangs by their role ("LSPD Officer Female #1", "Ballas Male #3"), the story's people by name
 // ("Lamar Davis", "Lamar Davis #2" for his second look), animals by kind. A ped without a picture is still

@@ -6,7 +6,7 @@
 -- any of them its vehicle catalog does not have yet (server/vehicle_catalog.lua); a car it already has keeps its name
 -- and class.
 --
--- ADD A CAR: put its picture in whip_assets_4 as img/vehicles/<model>.webp, add a line here, and restart whip_core.
+-- ADD A CAR: put its picture in whip_media_previews as img/vehicles/<model>.webp, add a line here, and restart whip_core.
 -- A line is { model, class, name }, and the class is one of:
 --   compacts  sedans  suvs  coupes  muscle  sportsclassics  sports  super  motorcycles  offroad  industrial  utility
 --   vans  cycles  boats  helicopters  planes  service  emergency  military  commercial  trains  openwheel

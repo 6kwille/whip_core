@@ -174,7 +174,7 @@
 }
 
 /* The keeper: the admin panel's full-length picture of the NPC, cropped to the head. Every one is shot
-   the same way (whip_assets/img/peds, 512 x 768, the head about 49% across and 12% down), so one crop
+   the same way (whip_media_previews/img/peds, 512 x 768, the head about 49% across and 12% down), so one crop
    fits them all: 160 of its pixels across the disc, the head in the middle. */
 #inv-talk-keeper .inv-talk-pic img {
     inset: auto;

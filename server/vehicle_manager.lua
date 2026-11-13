@@ -681,7 +681,7 @@ end)
 local function catalogList()
     local list = {}
     for model, row in pairs(VehicleCatalog.rows) do
-        -- url: an add-on pack's own picture (RegisterVehicles), where whip_assets has none.
+        -- url: an add-on pack's own picture (RegisterVehicles), where a media pack has none.
         list[#list + 1] = { model = model, name = row.displayName or nil, cls = tonumber(row.class),
                             img = row.hasImage == true or row.addonImage ~= nil, url = row.addonImage }
     end

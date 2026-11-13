@@ -38,7 +38,7 @@ end)
 -- ---- The wizard's Model step: the props, with their pictures ----
 --
 -- The furnisher's catalog as it shows it (Furnisher.catalog, client/property_furnish.lua): the props
--- this game can spawn, each with its name, category and whether whip_assets has its picture. The
+-- this game can spawn, each with its name, category and whether a media pack has its picture. The
 -- same list the furnisher and the world builder place from, so a container looks like what it is.
 RegisterNUICallback('cmPropCatalog', function(_, cb)
     local cat = Furnisher and Furnisher.catalog and Furnisher.catalog() or nil

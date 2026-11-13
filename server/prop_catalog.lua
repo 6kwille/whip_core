@@ -36,7 +36,7 @@ PropCatalog._rows = {}
 --- every login sends it, some 16,500 rows to build and sort. Whatever changes a row sets it back to nil.
 local wireCache = nil
 
--- THE PICTURES LIVE IN A whip_assets_N RESOURCE, not in whip_core: players download a resource again
+-- THE PICTURES LIVE IN A MEDIA PACK, not in whip_core: players download a resource again
 -- in full whenever anything in it changes, and these hardly ever do (its fxmanifest.lua). Which one
 -- holds a model's is WhipAssets.resourceFor (shared/assets.lua); html/js/assets.js loads them from the
 -- same place. They are rendered outside the game and come with the packs; whip only reads them.
@@ -209,7 +209,7 @@ function PropCatalog.seedFromConfig()
     print(('[whip_core:props] seeded %d new prop(s), named %d'):format(added, named))
 end
 
---- Make every row's picture flag match the disk: img/props/<model>.webp in its whip_assets_N there and
+--- Make every row's picture flag match the disk: img/props/<model>.webp in its media pack there and
 --- not empty means it has a picture.
 ---
 --- THE DISK IS THE ANSWER. The pictures arrive as files in the packs, so the flag follows the folder: a
@@ -220,7 +220,7 @@ end
 --- Opened, never read — one open and seek per catalog row, so a thousand icons cost a thousand
 --- opens at boot rather than a thousand files loaded into memory. Runs after loadAll and the seed.
 ---
---- NO PROPS' whip_assets_N, NO SYNC. Without its folder every picture in it would read as missing, and
+--- NO PROPS' MEDIA PACK, NO SYNC. Without its folder every picture in it would read as missing, and
 --- the flags of all of them would be switched off, to come back one by one only after the folder is
 --- restored and whip_core restarted. So a server without it keeps the flags as they are and says why.
 --- The folders are read whether or not their resources have started yet (start order does not matter); one
@@ -321,7 +321,7 @@ local function wireRow(model, row)
         -- where they can still be found, rather than in a tab that does not exist.
         category = (row.category and isCategory(row.category)) and row.category or 'misc',
         hasImage = hasImage(row),
-        -- An add-on pack's picture (RegisterProps), loaded from its own resource; otherwise whip_assets' by model.
+        -- An add-on pack's picture (RegisterProps), loaded from its own resource; otherwise the media packs' by model.
         image    = row.addonImage,
         -- A stash (Config.PropertyStashProps): { label, slots, weight }. It stays in its category and
         -- shows under the furnisher's Containers as well (server/property_stashes.lua).
@@ -628,7 +628,7 @@ exports('GetPropCatalog', function() return PropCatalog.wire() end)
 -- ============================================
 --
 -- A prop or MLO pack's props, in the furnisher while the pack runs, under a category whip has, with the pack's own
--- pictures: no edit to config.lua or whip_assets. A model whip already lists keeps its row (and an admin's choices on
+-- pictures: no edit to config.lua or the media packs. A model whip already lists keeps its row (and an admin's choices on
 -- it) and takes the pack's picture. Gone when the pack stops.
 local addonProps = Registry.new('AddonProp', {
     label = 'add-on prop',

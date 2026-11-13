@@ -2,7 +2,7 @@
 // PAUSE MAP — whip's map: GTA's world in 3D, GTA's data drawn over it
 //
 // The pause menu's map (pause.js), and the /whip panel's (whip-panel.js). The picture is 3D Clanker's 3D map —
-// js/map3d/map3d.js, its data map/whip-map3d.js in a whip_assets_N: the 2D map's shapes and colours standing on the game's
+// js/map3d/map3d.js, its data map/whip-map3d.js in a media pack: the 2D map's shapes and colours standing on the game's
 // heights. Straight down and north up it IS the 2D map; tilted and turned (the pause map: V, a right-drag, a pad's LB
 // and right stick) the buildings and hills stand up. On it go the player, the blips and the waypoint (elements of
 // this page, placed on the picture), and the GPS line and a page's own lines (drawn by the 3D map, on the ground),
@@ -162,7 +162,7 @@ export function blipTint(hex) {
     return 'url(#' + id + ')';
 }
 
-/** A blip's icon (img/blips/<sprite>.webp in its whip_assets_N) in its colour. */
+/** A blip's icon (img/blips/<sprite>.webp in its media pack) in its colour. */
 export function blipImage(sprite, colour) {
     const img = document.createElement('img');
     img.className = 'pmap-blip';
@@ -176,7 +176,7 @@ export function blipImage(sprite, colour) {
 }
 
 /** Load the data and build the 3D map, once for the page. three.js and the renderer are imported here, not at the
- *  page's load: the data's <script> first (a script, not a fetch, as gtav-map.js was: whip_assets_N is another origin). */
+ *  page's load: the data's <script> first (a script, not a fetch, as gtav-map.js was: a media pack is another origin). */
 function loadGl() {
     if (glState !== 'idle') return;
     glState = 'loading';

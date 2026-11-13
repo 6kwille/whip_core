@@ -434,7 +434,7 @@
    colour. */
 .cr-card-swatch { position: absolute; inset: 0 0 30px 0; }
 
-/* Clothing pictures (whip_assets/img/clothing): the item itself, over the
+/* Clothing pictures (img/clothing in whip_media_clothing_male and _female): the item itself, over the
    card, above its number. Hidden until it has loaded — the glyph holds the
    card until then, and for good when there is no picture (creator.js). */
 .cr-icon {

@@ -1,13 +1,13 @@
 -- ============================================
--- WHIP ASSETS — which whip_assets_N resource holds a picture, a video or a map file
+-- WHIP ASSETS — which media pack holds a picture, a video or a map file
 -- ============================================
 --
--- whip's pictures and videos are in resources of at most 256 MB each, by category (Josh, 30 Oct 2026): a player
--- downloads each once, and again only when something in that one changes. Which holds what is
--- shared/assets_index.lua, made by dev/assets_index.mjs from the folders. Ask here, never name a resource:
+-- whip's pictures and videos are in media packs (whip_media_*) of at most 256 MB each, by category (Josh, 30 Oct
+-- 2026): a player downloads each once, and again only when something in that one changes. Which holds what is
+-- shared/assets_index.lua, made by dev/assets_index.mjs from the packs. Ask here, never name a pack:
 --
---     WhipAssets.resourceFor('img/props/prop_bench_01a.webp')   -> 'whip_assets_3'
---     WhipAssets.url('img/props/prop_bench_01a.webp')           -> 'https://cfx-nui-whip_assets_3/img/props/...'
+--     WhipAssets.resourceFor('img/props/prop_bench_01a.webp')   -> 'whip_media_props'
+--     WhipAssets.url('img/props/prop_bench_01a.webp')           -> 'https://cfx-nui-whip_media_props/img/props/...'
 --
 -- The NUI asks html/js/assets.js the same (whipAssetUrl). Shared: both sides ask.
 
@@ -37,7 +37,7 @@ function WhipAssets.url(path)
     return ('https://cfx-nui-%s/%s'):format(res, (tostring(path):gsub('^/+', '')))
 end
 
---- Every whip_assets resource, in order.
+--- Every media pack, in the index's order (the order of the areas they hold).
 ---@return string[]
 function WhipAssets.resources()
     local out, seen = {}, {}
@@ -47,7 +47,6 @@ function WhipAssets.resources()
             out[#out + 1] = c.resource
         end
     end
-    table.sort(out, function(a, b) return (tonumber(a:match('%d+$')) or 0) < (tonumber(b:match('%d+$')) or 0) end)
     return out
 end
 

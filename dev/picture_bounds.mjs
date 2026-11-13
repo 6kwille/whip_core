@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ============================================
-// picture_bounds — where the thing is in each of whip_assets' pictures
+// picture_bounds — where the thing is in each of the media packs' pictures
 // ============================================
 //
 // A picture of a prop, a car or a ped is the thing on nothing, with room round it: a bed is wide and flat in a
@@ -12,13 +12,13 @@
 //   FFMPEG=C:/path/ffmpeg.exe node dev/...   when ffmpeg is not on the PATH
 //
 // Run it again after new pictures are added; a picture it has no bounds for is shown whole.
-// Needs ffmpeg (it reads the WebP pictures). Nothing is written into whip_assets.
+// Needs ffmpeg (it reads the WebP pictures). Nothing is written into the media packs.
 
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import assets from './assets_dirs.js';   // the whip_assets_N folders: every one holding an area is read
+import assets from './assets_dirs.js';   // the media packs' folders: every one holding an area is read
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const CORE = path.resolve(HERE, '..');
@@ -87,7 +87,7 @@ for (const key of Object.keys(out)) out[key] = Object.fromEntries(Object.entries
 const body = Object.entries(out).map(([key, list]) =>
     `    ${key}: {\n` + Object.entries(list).map(([m, b]) => `        '${m}': [${b.join(', ')}],`).join('\n') + '\n    },').join('\n');
 fs.writeFileSync(OUT, `// ============================================
-// PICTURE BOUNDS — where the thing is in each of whip_assets' pictures (made by dev/picture_bounds.mjs)
+// PICTURE BOUNDS — where the thing is in each of the media packs' pictures (made by dev/picture_bounds.mjs)
 // ============================================
 //
 // For each picture of a prop (p), a car (v) and a ped (n), by model: the box round what is drawn in it,

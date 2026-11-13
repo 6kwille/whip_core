@@ -89,7 +89,7 @@ const out = `-- ============================================
 -- names in dev/tattoo_names.json; run it again rather than editing this by hand. ${rows.length} tattoos:
 -- ${count.m} for the male body, ${count.f} for the female, ${count.mf} for both; ${named} with a name. Badges,
 -- Michael's, Franklin's and Trevor's, hair fades and the crew tattoos are left out (see the script).
--- Each has a picture in whip_assets/img/tattoos/<overlay name, lower case>.webp.
+-- Each has a picture in whip_media_previews/img/tattoos/<overlay name, lower case>.webp.
 --
 -- The dump is of the newest game, so the editor asks the game about each tattoo and offers only the
 -- ones this game build has (client/appearance.lua, tattoosFor); the server takes only a tattoo named

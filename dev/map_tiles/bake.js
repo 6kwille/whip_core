@@ -3,7 +3,7 @@
 //   git clone --depth 1 https://github.com/VIRUXE/gtav-map-tiles <folder>
 //   node dev/map_tiles/bake.js <folder>
 //
-// Writes whip_assets/map/whip/{z}/{x}-{y}.webp (z 0-5, 256 px). The colours are in whipify.js —
+// Writes whip_media_map/map/whip/{z}/{x}-{y}.webp (z 0-5, 256 px). The colours are in whipify.js —
 // change them there and bake again. Headless Chrome does the decoding, recolouring and encoding, so
 // nothing else needs installing. The art is Rockstar's; the tile set is unofficial.
 const { spawn } = require('child_process');
@@ -12,7 +12,7 @@ const path = require('path');
 
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const SRC = path.resolve(process.argv[2] || '');
-const OUT = path.join(require('../assets_dirs.js').assetDir('map'), 'whip');   // in its whip_assets_N
+const OUT = path.join(require('../assets_dirs.js').assetDir('map'), 'whip');   // in its media pack
 const PORT = 9333 + Math.floor(Math.random() * 400);
 const profile = path.join(require('os').tmpdir(), 'whip-map-bake-' + PORT);
 const fileUrl = (p) => 'file:///' + p.replace(/\\/g, '/');

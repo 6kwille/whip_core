@@ -50,7 +50,7 @@ function glyph(name) {
     return (g && g[name]) || '';
 }
 
-/** The head's art: the thing's picture when whip_assets has one (fitted as the Director fits it, an NPC's head), else
+/** The head's art: the thing's picture when a media pack has one (fitted as the Director fits it, an NPC's head), else
  *  the kind's glyph in its ring. A picture that will not load shows the glyph (the error listener below). */
 function headArt(h) {
     const g = `<span class="ov-art-glyph">${glyph(KIND_GLYPH[h.kind] || 'object')}</span>`;

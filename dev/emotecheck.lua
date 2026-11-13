@@ -14,7 +14,7 @@
 ---   The list defaults to ..\shared\emote_list.lua. Exits 1 if anything is wrong. Not loaded by
 ---   fxmanifest.lua.
 ---
---- Every `video` (an emote's or walk's preview) is checked against video\emotes\ in the whip_assets_N folders
+--- Every `video` (an emote's or walk's preview) is checked against video\emotes\ in the media packs' folders
 --- beside whip_core (any of them: the menu asks which, shared/assets.lua) — or against [videos folder], to check a
 --- new list before it moves in.
 
@@ -25,7 +25,10 @@ local VIDEOS = {}   -- the folders a video may be in
 if arg[3] then
     VIDEOS[1] = arg[3]:gsub('[/\\]$', '') .. '\\'
 else
-    for n = 1, 32 do VIDEOS[#VIDEOS + 1] = ('%s\\..\\..\\whip_assets_%d\\video\\emotes\\'):format(HERE, n) end
+    -- whip_media_previews holds the videos: beside whip_core, or in [whip]\[assets] with the other media packs
+    for _, pack in ipairs({ 'whip_media_previews', '[assets]\\whip_media_previews' }) do
+        VIDEOS[#VIDEOS + 1] = ('%s\\..\\..\\%s\\video\\emotes\\'):format(HERE, pack)
+    end
 end
 if not DUMPS then
     print('usage: lua emotecheck.lua <dumps folder> [list file]')
@@ -128,7 +131,7 @@ local function checkVideo(v, where)
         local f = io.open(dir .. file, 'rb')
         if f then f:close() return end
     end
-    bad(where, 'no video file video/emotes/' .. v .. ' in any whip_assets_N')
+    bad(where, 'no video file video/emotes/' .. v .. ' in any media pack')
 end
 
 -- categories

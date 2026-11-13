@@ -1,10 +1,10 @@
 // ============================================
-// WHIP ASSETS — which whip_assets_N resource holds a picture, a video or a map file (the NUI's half)
+// WHIP ASSETS — which media pack holds a picture, a video or a map file (the NUI's half)
 // ============================================
 //
 // The same answer as shared/assets.lua (WhipAssets.url), from the same index (js/assets-index.js, made by
 // dev/assets_index.mjs): whipAssetUrl('img/props/prop_bench_01a.webp') is
-// 'https://cfx-nui-whip_assets_3/img/props/prop_bench_01a.webp', or null when no area holds it. A plain script, as
+// 'https://cfx-nui-whip_media_props/img/props/prop_bench_01a.webp', or null when no area holds it. A plain script, as
 // the index is: a page loads both with <script> (assets-index.js first); a module imports both (js/utils.js).
 
 (function () {

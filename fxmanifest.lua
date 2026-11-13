@@ -478,7 +478,7 @@ files {
     'html/img/items/*.png',
     'html/img/jobs/*.png',
     'html/img/pad/*.svg',
-    -- Only the "no picture" stand-in: the other vehicle pictures live in the whip_assets_N resources.
+    -- Only the "no picture" stand-in: the other vehicle pictures live in the media packs.
     'html/img/vehicles/*.png',
     -- Not loaded by whip_core: satellites include it. Listed so clients can fetch it from this resource.
     'lib/satellite.lua',

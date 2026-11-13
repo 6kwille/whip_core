@@ -918,7 +918,7 @@ html[data-input="pad"] #furnisher.fz-director #fz-stepchip { display: inline-fle
 .fz-tile.fz-noimg .fz-tile-img, .fz-row-pic.fz-noimg .fz-row-img, .fz-sel-pic.fz-noimg .fz-sel-img { display: none; }
 .fz-tile.fz-noimg .fz-tile-fallback, .fz-row-pic.fz-noimg .fz-row-fallback, .fz-sel-pic.fz-noimg .fz-sel-fallback { display: block; }
 
-/* THE NPCs' PICTURES (whip_assets/img/peds) are full-length 2:3 shots, the ped a narrow figure in
+/* THE NPCs' PICTURES (whip_media_previews/img/peds) are full-length 2:3 shots, the ped a narrow figure in
    the middle. Shown by its figure (fitPicture: the room either side of it is left out), the whole
    ped, head to feet, three to a row and taller than it was two to a row: every picture the same
    height whether the name below it takes one line or two. */
@@ -1006,7 +1006,7 @@ html[data-input="pad"] #furnisher.fz-director #fz-stepchip { display: inline-fle
 }
 
 /* NO IMAGE YET is a normal state, not an error: a prop added with /prop add has no picture until
-   one is added to whip_assets. Its CATEGORY's glyph stands in, which says more than a broken-image icon
+   one is added to a media pack. Its CATEGORY's glyph stands in, which says more than a broken-image icon
    and exactly as much as a generic box would. */
 .fz-tile-art {
     width: 34px;

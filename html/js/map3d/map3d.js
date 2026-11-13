@@ -1,5 +1,5 @@
 // whip's 3D map: the 2D map's shapes (gtav-map.js: same shapes, colours and paint order) standing on the game's
-// heights (whip_assets/map/whip-map3d.js; built by the 3D map's build/ scripts). One WebGL canvas, drawn on demand only.
+// heights (whip_media_map/map/whip-map3d.js; built by the 3D map's build/ scripts). One WebGL canvas, drawn on demand only.
 //
 //   import { WhipMap3D, MinimapCamera, K0 } from './map3d/map3d.js';
 //   const map = new WhipMap3D(container, { data: window.WHIP_MAP3D });   // builds in slices: await map.ready

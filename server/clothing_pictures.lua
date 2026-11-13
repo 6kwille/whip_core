@@ -8,11 +8,11 @@
 -- decides card by card (html/js/creator.js hasPicture); this side says which pictures there are.
 --
 -- The list is data/clothing-pictures.json HERE in whip_core (not beside the pictures, so the editor shows
--- only real items even when their whip_assets_N is not running; players never download it), written by
--- dev/clothing_pictures.js from the whip_assets_N folders ("Rebuild clothing picture list.bat" in
--- whip_assets_1): FXServer's Lua cannot list a folder, and a JavaScript file listing it here made FXServer
+-- only real items even when their media pack is not running; players never download it), written by
+-- dev/clothing_pictures.js from the media packs' folders ("Rebuild clothing picture list.bat" in
+-- whip_media_clothing_male): FXServer's Lua cannot list a folder, and a JavaScript file listing it here made FXServer
 -- enter whip_core every server frame for good. It is read when whip_core starts and whenever a
--- whip_assets_N does (new pictures reach players at that restart, so that is when the list changes). A
+-- media pack does (new pictures reach players at that restart, so that is when the list changes). A
 -- player's game asks for its body's part once, the first time its editor opens.
 --
 -- No list, nothing hidden: without it, every card shows as it did before pictures.
@@ -26,7 +26,7 @@ local function noList(why)
     pictures = nil
     print(('[whip_core:clothing] WARNING: no clothing picture list (%s), so the character editor shows every'
         .. ' apparel and accessory item, pictured or not. Double-click "Rebuild clothing picture list.bat" in'
-        .. ' whip_assets_1, then restart whip_core.'):format(why))
+        .. ' whip_media_clothing_male, then restart whip_core.'):format(why))
 end
 
 local function readList()

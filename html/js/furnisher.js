@@ -449,7 +449,7 @@ function tileHtml(p) {
     // The image URL is the model name by convention — the same rule the manufacturer logos follow.
     // A prop with no picture yet falls back to its CATEGORY's glyph, which says more than a broken
     // image icon and exactly as much as a generic box would. A vehicle's and an NPC's pictures are
-    // asked for whatever they are (whip_assets/img/vehicles, img/peds), the glyph standing in.
+    // asked for whatever they are (whip_media_previews/img/vehicles, img/peds), the glyph standing in.
     let art;
     if (kind === 'vehicle') art = pictureOr('fz-tile', vehicleImageUrl(p.model), 'car', fitAttrs('vehicle', p.model));
     else if (kind === 'npc' && p.lore && p.picture) {

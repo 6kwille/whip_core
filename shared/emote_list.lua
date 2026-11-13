@@ -17,7 +17,7 @@
 --     props only   nothing to play: something held or worn while the player moves as normal
 --   props     up to 2 things held or worn:
 --             { model = 'prop name', bone = bone id, offset = { x, y, z }, rot = { x, y, z } }
---   video     optional: its preview in the menu, a file under whip_assets/video/emotes/ ('Emotes/wave.webm')
+--   video     optional: its preview in the menu, a file under whip_media_previews/video/emotes/ ('Emotes/wave.webm')
 --
 -- A WALK is { cmd, label, clipset, video }.  A MOOD (facial expression) is { cmd, label, anim }.
 --

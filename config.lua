@@ -1294,7 +1294,7 @@ Config.LoreVoice = {
 
 -- Prop catalog: every prop in the game is placeable in the furnisher, filed under the categories below. To add more
 -- to the catalog, list them in Config.PropSeeds, or look at a prop in game and type /prop add <category>. To take
--- one out, place it, look at it and type /prop remove. Pictures come from whip_assets (img/props/<model>.webp).
+-- one out, place it, look at it and type /prop remove. Pictures come from whip_media_props (img/props/<model>.webp).
 -- Categories are listed in the order written here. Clusters are the rail's top row: pick a group and only that
 -- group's categories show. A category with no cluster, or an unknown one, falls into the first.
 Config.PropClusters = {

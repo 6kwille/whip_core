@@ -2,18 +2,18 @@
 //
 //   node dev/map_tiles/svg_map.js <gtav-map.svg>
 //
-// Writes whip_assets/map/gtav-map.js: `window.WHIP_MAP = { colours, polys }`, read by
+// Writes whip_media_map/map/gtav-map.js: `window.WHIP_MAP = { colours, polys }`, read by
 // html/js/pause-map.js, which draws it on a canvas — sharp at every zoom, unlike the tiles.
 //   colours  [[r, g, b], ...]                  the SVG's own fills; pause-map.js recolours them
 //   polys    [colourIndex, x0, y0, x1, y1, ...] in the SVG's order (later ones on top)
 // Points are GTA world metres (X east, Y north), to a tenth. A gradient fill (a few ramps) becomes
 // the average of its stops. A script, not JSON: the page loads it with a <script> tag from
-// whip_assets, which a fetch across resources might not be allowed to do.
+// a media pack, which a fetch across resources might not be allowed to do.
 const fs = require('fs');
 const path = require('path');
 
 const SRC = process.argv[2];
-const OUT = path.join(require('../assets_dirs.js').assetDir('map'), 'gtav-map.js');   // in its whip_assets_N
+const OUT = path.join(require('../assets_dirs.js').assetDir('map'), 'gtav-map.js');   // in its media pack
 if (!SRC || !fs.existsSync(SRC)) { console.error('usage: node dev/map_tiles/svg_map.js <gtav-map.svg>'); process.exit(1); }
 
 const s = fs.readFileSync(SRC, 'utf8');

@@ -1,5 +1,5 @@
 // ============================================
-// PICTURE BOUNDS — where the thing is in each of whip_assets' pictures (made by dev/picture_bounds.mjs)
+// PICTURE BOUNDS — where the thing is in each of the media packs' pictures (made by dev/picture_bounds.mjs)
 // ============================================
 //
 // For each picture of a prop (p), a car (v) and a ped (n), by model: the box round what is drawn in it,

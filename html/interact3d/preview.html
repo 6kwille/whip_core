@@ -60,7 +60,7 @@ html, body {
 <body>
 <div id="wrap"><img id="img" class="hide" alt=""></div>
 
-<!-- Which whip_assets_N holds each picture: the index, then its asking (whipAssetUrl). -->
+<!-- Which media pack holds each picture: the index, then its asking (whipAssetUrl). -->
 <script src="../js/assets-index.js"></script>
 <script src="../js/assets.js"></script>
 <script>
@@ -91,8 +91,8 @@ html, body {
     // Paths are relative to html/, the same root the main UI uses, so a caller writes
     // 'img/vehicles/tulip.webp' and neither side needs to know where this page happens to sit.
     //
-    // EXCEPT THE PICTURES THAT MOVED. Vehicle and furniture pictures live in the whip_assets_N
-    // resources now (img/vehicles/, img/props/), so those two folders are looked up there under
+    // EXCEPT THE PICTURES THAT MOVED. Vehicle and furniture pictures live in the media
+    // packs now (img/vehicles/, img/props/), so those two folders are looked up there under
     // the same names (whipAssetUrl says which one) — and every caller that already writes
     // 'img/vehicles/tulip.webp' keeps working. A full URL (nui://… or https://cfx-nui-…) is used as it is.
     function resolve(path) {

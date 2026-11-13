@@ -7,7 +7,7 @@
 -- double-click for a waypoint, a legend). Settings opens GTA's own settings; Quit leaves the
 -- server. The page is html/js/pause.js and pause-map.js.
 --
--- The map is whip's, the data is GTA's. The picture is a tile set (whip_assets/map/whip). What is
+-- The map is whip's, the data is GTA's. The picture is a tile set (whip_media_map/map/whip). What is
 -- on it comes from the game, read here while the menu is open and sent to the page: where the
 -- player is, every blip (sprite, colour, position — GTA gives no blip's name, so only whip's own
 -- carry one), the GPS line (points along the route), and the waypoint. A waypoint set on the map

@@ -10,7 +10,7 @@
 -- ships. Each start adds the ones the `vehicle_catalog` table has never had and fills in a missing name or class; a
 -- row that exists otherwise keeps what it has.
 --
--- THE PICTURE IS THE FILE: img/vehicles/<model>.webp in its whip_assets pack, and not empty, read from disk at each
+-- THE PICTURE IS THE FILE: img/vehicles/<model>.webp in its media pack, and not empty, read from disk at each
 -- start. An older database also has the columns a retired in-game picture tool wrote (hasImage, imageW, imageH,
 -- status, capturedBy, captureNote, generatedAt). Nothing reads them.
 
@@ -161,14 +161,14 @@ end
 -- ============================================
 
 --- The URL a model's picture is served at, from any resource's NUI. false (never nil: an export's return list is cut at
---- the first nil) when no whip_assets pack holds vehicle pictures.
+--- the first nil) when no media pack holds vehicle pictures.
 ---@param key string  lower-case model
 ---@return string|false
 local function imageUrl(key)
     return WhipAssets.url(IMG_DIR .. key .. IMG_EXT) or false
 end
 
---- A row's picture: an add-on pack's own (RegisterVehicles), else whip_assets' file. nil when it has none.
+--- A row's picture: an add-on pack's own (RegisterVehicles), else the media packs' file. nil when it has none.
 local function pictureOf(key, row)
     if row and row.addonImage then return row.addonImage end
     if row and row.hasImage == true then return imageUrl(key) or nil end
@@ -180,7 +180,7 @@ end
 -- ============================================
 --
 -- A car pack's cars, in the catalog while the pack runs: named, classed and pictured everywhere the catalog is read
--- (the dealership, the vehicle wizard, garages, the Banks page), with no edit to whip_core or whip_assets. A model
+-- (the dealership, the vehicle wizard, garages, the Banks page), with no edit to whip_core or the media packs. A model
 -- whip already lists keeps its name and class and takes the pack's picture. Gone when the pack stops.
 local addonCars = Registry.new('AddonVehicle', {
     label = 'add-on vehicle',
