@@ -19,6 +19,9 @@ Whip = Whip or {}
 local CORE = 'whip_core'
 local SELF = GetCurrentResourceName()
 
+--- Errors and red prints since this resource started, or since Whip.sayStarted last spoke.
+local _startProblems = 0
+
 -- ============================================
 -- Your errors, kept by whip_core for tools
 -- ============================================
@@ -78,6 +81,7 @@ if GetResourceMetadata(SELF, 'whip_error_tap', 0) ~= 'no' then
     local function runCaught(fn, ...)
         local r = table.pack(xpcall(fn, traceback, ...))
         if r[1] then return table.unpack(r, 2, r.n) end
+        _startProblems = _startProblems + 1
         report('error', r[2])
         nativePrint(('^1SCRIPT ERROR: %s^7'):format(tostring(r[2])))
     end
@@ -146,6 +150,7 @@ if GetResourceMetadata(SELF, 'whip_error_tap', 0) ~= 'no' then
         nativePrint(...)
         local first = ...
         if type(first) == 'string' and first:sub(1, 2) == '^1' then
+            _startProblems = _startProblems + 1
             local parts = table.pack(...)
             for i = 1, parts.n do parts[i] = tostring(parts[i]) end
             report('warning', (table.concat(parts, ' ', 1, parts.n):gsub('%^%d', '')))
@@ -217,7 +222,7 @@ local _waiting = {}
 -- The exports that can wait, on each side: dev/waits.js finds them, its --write writes this list and the docs' WAITS
 -- list, and its --check keeps both the same as the stubs' ---@async marks. Only these get Whip.call's thread and
 -- promise; every other call goes straight through (cheap enough for a loop).
-local WAITS = json.decode([[{"server":["AddCatalogItem","AddItem","AdoptVehicle","BankDeposit","BankSystemDeposit","BankSystemTransfer","BankSystemWithdraw","BankTransfer","BankWithdraw","CanGrantBankAccess","CanHirePlayer","CanUseBankAccount","ChargePlayer","ClaimVehicle","ClearAllVehicleData","ClearVehicleData","CloseBankAccount","ClosePanel","ClosePlayerInventory","CloseStore","CommitWithAction","CreateBankAccount","CreateContainer","CreateDoor","CreateGarage","CreateGroundItem","CreateJobRole","CreateOwnedVehicle","CreateShop","DeleteContainer","DeleteDoor","DeleteGarage","DeleteGroundItem","DeleteJob","DeleteJobRole","DeleteShop","DeleteZone","DespawnVehicle","EnsureContainer","EnsureDoor","EnsureDoors","EnsureJob","EnsureShop","EnsureTable","EnsureZone","FlushActivityLog","GetBalance","GetBankAccessList","GetBankAccount","GetBankTransactions","GetCharacterBankAccounts","GetCharacterNames","GetDefaultBankAccount","GetItemAt","GetJobBankAccounts","GetPermissionHolders","GetPlayerMetadata","GetPlayerVehicleKeys","GetScenarioStats","GetShopPrices","GetShopStock","GiveOnLogin","GivePropertyKey","GiveVehicleKey","GrantBankAccess","GrantPermission","HasVehicleKey","HirePlayer","HoldDoor","HoldMoney","IsCharacterDeleted","LinkDoors","LogActivity","LoreSay","OpenPlayerInventory","OpenStore","PayAsLore","PayPlayer","Progress","RefundPlayer","RegisterPropertyPack","RegisterProps","RegisterVehicles","RemoveCatalogItem","RemoveItem","RemovePropertyKey","RemoveVehicleKey","RequestScreenshot","RevokeBankAccess","RevokePermission","SavePlayer","SetBankAccountFrozen","SetHeldItem","SetItemMetadata","SetPlayerMetadata","SetPropertyOwner","SetPropertyTheme","SetShopItemPrice","SetShopLayout","SetVehicleAppearance","SetVehicleData","SetVehicleGarage","SetVehicleLocked","SetVehiclePlate","SettleMoneyHold","SkillCheck","SpawnTempVehicle","SpawnVehicle","StoreCount","StoreGive","StoreMove","StoreRead","StoreTake","SwitchScenario","TestDirectorCard","TestDirectorScenario","TransferVehicle","UnlinkDoors","UpdateContainer","UpdateDoor","UpdateGarage","UpdateJob","UpdateJobRole","UpdateShop","__AdoptOrCreateDoor","__RegisterDirectorScenario","__ReleaseManagedDoor"],"client":["Alert","Callback","ClockOff","ClockOn","Confirm","EnterCharacter","FreeHands","GetPlayerFullName","Input","LoadAnimDict","LoadAnimSet","LoadModel","LoadPtfxAsset","LoadTextureDict","OpenKeyboard","OrbitCamera","PlayCameraPath","PlayCameraSequence","PressScreen","Progress","ReadScreen","ResolveVehicle","SkillCheck","TakeScreenshot","TakeVehicleControl"]}]])
+local WAITS = json.decode([[{"server":["AddCatalogItem","AddItem","AdoptVehicle","BankDeposit","BankSystemDeposit","BankSystemTransfer","BankSystemWithdraw","BankTransfer","BankWithdraw","CanGrantBankAccess","CanHirePlayer","CanUseBankAccount","ChargePlayer","ClaimVehicle","ClearAllVehicleData","ClearVehicleData","CloseBankAccount","ClosePanel","ClosePlayerInventory","CloseStore","CommitWithAction","CreateBankAccount","CreateContainer","CreateDoor","CreateGarage","CreateGroundItem","CreateJobRole","CreateOwnedVehicle","CreateShop","DeleteContainer","DeleteDoor","DeleteGarage","DeleteGroundItem","DeleteJob","DeleteJobRole","DeleteShop","DeleteZone","DespawnVehicle","EnsureContainer","EnsureDoor","EnsureDoors","EnsureJob","EnsureShop","EnsureTable","EnsureZone","FlushActivityLog","GetBalance","GetBankAccessList","GetBankAccount","GetBankTransactions","GetCharacterBankAccounts","GetCharacterNames","GetDefaultBankAccount","GetItemAt","GetJobBankAccounts","GetPermissionHolders","GetPlayerMetadata","GetPlayerVehicleKeys","GetScenarioStats","GetShopPrices","GetShopStock","GiveOnLogin","GivePropertyKey","GiveVehicleKey","GrantBankAccess","GrantPermission","HasVehicleKey","HirePlayer","HoldDoor","HoldMoney","IsCharacterDeleted","LinkDoors","LogActivity","LoreSay","OpenPlayerInventory","OpenStore","PayAsLore","PayPlayer","Progress","RefundPlayer","RegisterPropertyPack","RegisterProps","RegisterVehicles","RemoveCatalogItem","RemoveItem","RemovePropertyKey","RemoveVehicleKey","RequestScreenshot","RevokeBankAccess","RevokePermission","SavePlayer","SetBankAccountFrozen","SetHeldItem","SetItemMetadata","SetPlayerMetadata","SetPropertyOwner","SetPropertyTheme","SetShopItemPrice","SetShopLayout","SetVehicleAppearance","SetVehicleData","SetVehicleGarage","SetVehicleLocked","SetVehiclePlate","SettleMoneyHold","SkillCheck","SpawnTempVehicle","SpawnVehicle","StoreCount","StoreGive","StoreMove","StoreRead","StoreTake","SwitchScenario","TestDirectorCard","TestDirectorScenario","TransferVehicle","UnlinkDoors","UpdateContainer","UpdateDoor","UpdateGarage","UpdateJob","UpdateJobRole","UpdateShop","__AdoptOrCreateDoor","__RegisterDirectorScenario","__ReleaseManagedDoor"],"client":["Alert","Callback","ClockOff","ClockOn","Confirm","EnterCharacter","FreeHands","GetPlayerFullName","Input","LoadAnimDict","LoadAnimSet","LoadModel","LoadPtfxAsset","LoadTextureDict","OpenKeyboard","OrbitCamera","PlaceObject","PlayCameraPath","PlayCameraSequence","PressScreen","Progress","ReadScreen","ResolveVehicle","SkillCheck","TakeScreenshot","TakeVehicleControl"]}]])
 local WAITS_HERE = {}
 for _, n in ipairs(WAITS[IsDuplicityVersion() and 'server' or 'client'] or {}) do WAITS_HERE[n] = true end
 
@@ -300,14 +305,15 @@ local function declares(name)
         or name == 'SecureEvent' or name == 'SecureCallback'
 end
 
---- Print a refusal (`false, why`) in this console, naming the export, and pass every answer on.
+--- Print a refusal (`false, why`) in this console, naming the export, and pass every answer on. A start problem
+--- (Whip.startProblem): red, and Whip.sayStarted does not then say all is well.
 local function sayRefusal(name, ...)
     local ok, why = ...
     if ok == false and type(why) == 'string' then
         -- Whip.call's own reasons already name the export ('whip_core:X failed: ...')
         local text = why:find('whip_core:' .. name, 1, true) == 1 and why
             or ('whip_core:%s refused: %s'):format(name, why)
-        print(('[%s] %s'):format(SELF, text))
+        Whip.startProblem('%s', text)
     end
     return ...
 end
@@ -367,7 +373,8 @@ local function runAll(list, what)
     for _, fn in ipairs(snapshot) do
         local ok, err = pcall(fn)
         if not ok then
-            print(('[%s] %s failed: %s'):format(SELF, what, tostring(err)))
+            _startProblems = _startProblems + 1
+            print(('^1[%s] %s failed: %s^0'):format(SELF, what, tostring(err)))
         end
     end
     _passes[co] = _passes[co] > 1 and _passes[co] - 1 or nil
@@ -419,6 +426,32 @@ end
 ---@param fn function
 function Whip.onCoreLost(fn)
     _lostFns[#_lostFns + 1] = fn
+end
+
+-- ============================================
+-- One line when you have started: Whip.sayStarted, Whip.startProblem
+-- ============================================
+--
+--     Whip.sayStarted()                                          -- once, in a server file
+--     Whip.startProblem('engines.json is unreadable: %s', why)   -- what went wrong, in red
+--
+-- Once your Whip.register functions have run, the server console says "<your resource> started successfully!",
+-- unless something went wrong since your resource started: one of them threw, an error was caught in your code, or
+-- something was printed in red (Whip.startProblem does both). Then those lines are all it says.
+
+local _sayStarted = false
+
+--- SERVER. Say "<your resource> started successfully!" once your registrations have run, each time whip_core is ready.
+function Whip.sayStarted()
+    _sayStarted = IsDuplicityVersion()
+end
+
+--- Something wrong found while starting: printed in red with your resource's name, and Whip.sayStarted stays quiet.
+---@param fmt string  as string.format's, with the values after it
+function Whip.startProblem(fmt, ...)
+    _startProblems = _startProblems + 1
+    local text = select('#', ...) > 0 and fmt:format(...) or tostring(fmt)
+    print(('^1[%s] %s^0'):format(SELF, text))
 end
 
 -- ============================================
@@ -877,7 +910,7 @@ end
 -- Player settings (client side): Whip.playerSetting
 -- ============================================
 --
--- A row of your own on the pause menu's Server Settings page: a choice each PLAYER makes
+-- A row of your own on the pause menu's Settings page, under Server: a choice each PLAYER makes
 -- for themselves, not your server config (that is Whip.configPage). Your resource keeps the value as it already
 -- does (its own KVP); the page shows it and changes it through `get` and `set`. On the client:
 --
@@ -2101,8 +2134,11 @@ end
 AddEventHandler('whip_core:onReady', function(info)
     if not concernsUs(info) then return end
     _heard = true
-    if #_registerFns == 0 then return end
-    runAll(_registerFns, 'Whip.register')
+    if #_registerFns > 0 then runAll(_registerFns, 'Whip.register') end
+    if _sayStarted then
+        if _startProblems == 0 then print(('%s started successfully!'):format(SELF)) end
+        _startProblems = 0
+    end
 end)
 
 AddEventHandler('onResourceStop', function(res)

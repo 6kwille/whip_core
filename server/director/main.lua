@@ -1440,6 +1440,7 @@ function Director.runEnded(run, outcome, reason)
         if not ok then say('^1run %d: its cooldown could not be kept: %s^0', run.id, tostring(err)) end
     end
     DirectorTalk.runEnded(run)
+    DirectorSpeakers.runEnded(run)   -- the songs it plays on speakers stop with it
     if run.scenario then refreshStart(run.scenario) end
     -- A test's own end goes to its strip (server/director/hub.lua), not to a notification.
     if run.test then
@@ -1795,7 +1796,6 @@ CoreStart.add('the Director', function()
 
     -- Back on once a character has loaded: their standing things are NPCs, and an NPC made with nobody
     -- in the game loses its network id on Enhanced (Character.afterFirstLoad).
-    if not Character.anyLoaded() then say('active scenarios come back on when the first character loads') end
     Character.afterFirstLoad(function()
         -- Each on its own: one that throws is said, and the rest still come back on.
         for _, s in ipairs(DirectorStore.list()) do

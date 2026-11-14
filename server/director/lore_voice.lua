@@ -15,6 +15,8 @@
 --       opts.wait: answer only once the line has been said
 --       opts.busy: 'skip' | 'queue' | 'cut' while it is already talking (else the line's own If talking setting)
 --       opts.bonus: metres (0-250) it is heard at full volume, and its subtitle seen, further than usual
+--       opts.megaphone: true to say it through a megaphone (held up, heard further, the bullhorn sound)
+--       opts.radio: a frequency to say it on too, a whole number (everyone on it hears it, as a player's radio)
 
 local LoreVoice = {}   -- this file's own; other files reach it through DirectorLore.cleanVoice / voiceInfo and LoreSay
 
@@ -91,6 +93,9 @@ function LoreVoice.audioProblem(url)
     return ('only links starting with %s are accepted'):format(table.concat(starts, ' or '))
 end
 
+--- The same check for any recording the voice bot plays for the Director (a speaker's song: speakers.lua).
+function DirectorLore.audioProblem(url) return LoreVoice.audioProblem(url) end
+
 --- A character's voice lines as whip keeps them: { [line] = { { url, text? }, ... } } (lines with none left out).
 --- From the Lore form (JSON text) or a table. nil and why for something it will not keep.
 function DirectorLore.cleanVoice(v)
@@ -152,6 +157,8 @@ local voices = {}      -- [npcId] = { key = world voice key | nil, making = bool
 local speaking = {}    -- [npcId] = true while a line plays
 local queued = {}      -- [npcId] = { { line, at, p }, ... }: said in turn once the line it is saying ends (sayFrom)
 local playing = {}     -- [npcId] = the promise a caller waits on while its line plays (playFrom, opts.wait)
+local saying = {}      -- [npcId] = the line it is saying ({ cut }: a newer line cut it off)
+local held = {}        -- [npcId] = ms until the megaphone or radio of its last line is held up (every game was told)
 local lastLine = {}    -- [npcId] = ms its last line started
 local greeted = {}     -- [npcId] = { [src] = { at = ms, bye = bool } }
 local reacted = {}     -- [npcId] = { [reaction] = ms }
@@ -177,6 +184,7 @@ local function forget(npcId)
     if not npcs[npcId] then return end
     npcs[npcId] = nil
     greeted[npcId], reacted[npcId], speaking[npcId], lastLine[npcId] = nil, nil, nil, nil
+    saying[npcId], held[npcId] = nil, nil
     -- Lines waiting for it go unsaid (a card waiting on one hears why), and the one it says (its voice goes with it,
     -- and with it the line's end)
     for _, item in ipairs(queued[npcId] or {}) do if item.p then item.p:resolve('its NPC went') end end
@@ -295,6 +303,44 @@ local function reach(npcId, key, bonus)
 end
 LoreVoice.MAX_BONUS = MAX_BONUS
 
+-- A line's DEVICES (its card's Through a megaphone and On the radio, or LoreSay's opts): the megaphone up, and its
+-- voice on a radio frequency as well as out loud, for that line only; back to neither when the line ends (whip_voice
+-- SetWorldVoiceMegaphone, SetWorldVoiceRadio). Its NPC holds the megaphone or the radio while it talks
+-- (client/lore_reactions.lua).
+
+--- A radio frequency asked for, as whip_voice takes one (a whole number): the number, nil for none, or false and why
+--- for one it cannot be (101.5, some text): refused, never quietly said out loud instead.
+local function freqOf(v)
+    if v == nil or v == false then return nil end
+    local f = math.tointeger(tonumber(v))
+    if not f then return false, ('a radio frequency is a whole number (not %s)'):format(tostring(v)) end
+    return f
+end
+
+--- Its voice's megaphone and radio for the next line, d = { megaphone = bool, radio = frequency | nil } ({}: neither).
+--- Answers true when it just went on a frequency (those on it are connected before the line plays). What whip_voice
+--- refuses (an older whip_voice, a frequency out of range) is said in the console, and the line is still said.
+local function devices(npcId, key, d)
+    local v = voices[npcId]
+    if not (v and v.key == key) then return false end
+    local meg = d.megaphone == true
+    if (v.megaphone == true) ~= meg then
+        local ok, done, why = pcall(function() return exports[VOICE]:SetWorldVoiceMegaphone(key, meg) end)
+        if ok and done then v.megaphone = meg or nil
+        else say('the megaphone could not go %s: %s', meg and 'up' or 'down', tostring(ok and why or done)) end
+    end
+    local freq = math.tointeger(tonumber(d.radio))
+    if v.radio ~= freq then
+        local ok, done, why = pcall(function() return exports[VOICE]:SetWorldVoiceRadio(key, freq or false) end)
+        if ok and done then
+            v.radio = freq
+            return freq ~= nil
+        end
+        say('it could not go %s: %s', freq and ('on frequency ' .. freq) or 'off the radio', tostring(ok and why or done))
+    end
+    return false
+end
+
 --- The next variant of a line (in turn), or nil.
 local function pick(loreKey, voice, line)
     local list = voice[line]
@@ -324,8 +370,8 @@ local function busyOf(voice, line)
 end
 LoreVoice.busyOf = busyOf
 
---- The next line waiting for this NPC, said now (one that waited too long is dropped). From a thread. An item is one
---- of its lines (`line`) or a recording of a card's own (`v`: Play Custom Voice Line).
+--- The next line waiting for this NPC, said now (one that waited too long is dropped): true when there was one. From
+--- a thread. An item is one of its lines (`line`) or a recording of a card's own (`v`: Play Custom Voice Line).
 local function nextQueued(npcId)
     local q = queued[npcId]
     while q and #q > 0 do
@@ -333,11 +379,12 @@ local function nextQueued(npcId)
         if GetGameTimer() - item.at <= QUEUE_STALE_MS then
             CreateThread(function()
                 local ok, why
-                if item.v then ok, why = LoreVoice.playFrom(npcId, item.v, { wait = item.p ~= nil, bonus = item.bonus })
-                else ok, why = LoreVoice.sayFrom(npcId, item.line, { busy = 'cut', wait = item.p ~= nil, bonus = item.bonus }) end
+                local o = { wait = item.p ~= nil, bonus = item.bonus, megaphone = item.megaphone, radio = item.radio }
+                if item.v then ok, why = LoreVoice.playFrom(npcId, item.v, o)
+                else o.busy = 'cut'; ok, why = LoreVoice.sayFrom(npcId, item.line, o) end
                 if item.p then item.p:resolve(ok and 'done' or (why or 'failed')) end
             end)
-            return
+            return true
         end
         if item.p then item.p:resolve('it waited too long') end
     end
@@ -358,14 +405,16 @@ local function queueBehind(npcId, item, wait)
 end
 
 --- An NPC says a line (WAITS while its recording is fetched). opts.wait: until it has been said. opts.busy: 'skip',
---- 'queue' or 'cut' instead of the line's own setting. opts.bonus: its Bonus range (metres). true (or true,
---- 'queued'), or false and why.
+--- 'queue' or 'cut' instead of the line's own setting. opts.bonus: its Bonus range (metres). opts.megaphone,
+--- opts.radio: through a megaphone, on a frequency (devices). true (or true, 'queued'), or false and why.
 function LoreVoice.sayFrom(npcId, line, opts)
     opts = type(opts) == 'table' and opts or {}
     if not cfg().enabled then return false, 'lore voice lines are switched off (Config.LoreVoice.Enabled)' end
     local n = npcs[npcId]
     if not n then return false, 'that NPC is not a lore character in the world now' end
     if not BY_KEY[line] then return false, ('no line "%s"'):format(tostring(line)) end
+    local okF, fwhy = freqOf(opts.radio)
+    if okF == false then return false, fwhy end
     local voice, c = linesOf(n.key)
     if not (voice and type(voice[line]) == 'table' and #voice[line] > 0) then
         return false, ('%s has no %s line'):format(c and c.name or n.key, BY_KEY[line].label)
@@ -373,9 +422,10 @@ function LoreVoice.sayFrom(npcId, line, opts)
     local mode = BUSY[opts.busy] and opts.busy or busyOf(voice, line)
     if speaking[npcId] and mode ~= 'cut' then
         if mode == 'skip' then return false, 'already talking (this line is set to skip then)' end
-        return queueBehind(npcId, { line = line, bonus = opts.bonus }, opts.wait)
+        return queueBehind(npcId, { line = line, bonus = opts.bonus, megaphone = opts.megaphone, radio = opts.radio }, opts.wait)
     end
-    return LoreVoice.playFrom(npcId, pick(n.key, voice, line), { wait = opts.wait, line = line, bonus = opts.bonus })
+    return LoreVoice.playFrom(npcId, pick(n.key, voice, line), { wait = opts.wait, line = line, bonus = opts.bonus,
+        megaphone = opts.megaphone, radio = opts.radio })
 end
 
 --- An NPC says a recording of a card's own, { url, text? } (Play Custom Voice Line), as a line is said: while it
@@ -385,37 +435,64 @@ function LoreVoice.sayRecording(npcId, v, opts)
     opts = type(opts) == 'table' and opts or {}
     if not cfg().enabled then return false, 'lore voice lines are switched off (Config.LoreVoice.Enabled)' end
     if not npcs[npcId] then return false, 'that NPC is not a lore character in the world now' end
+    local okF, fwhy = freqOf(opts.radio)
+    if okF == false then return false, fwhy end
     local mode = BUSY[opts.busy] and opts.busy or 'queue'
     if speaking[npcId] and mode ~= 'cut' then
         if mode == 'skip' then return false, 'already talking (this card is set to skip then)' end
-        return queueBehind(npcId, { v = v, bonus = opts.bonus }, opts.wait)
+        return queueBehind(npcId, { v = v, bonus = opts.bonus, megaphone = opts.megaphone, radio = opts.radio }, opts.wait)
     end
-    return LoreVoice.playFrom(npcId, v, { wait = opts.wait, bonus = opts.bonus })
+    return LoreVoice.playFrom(npcId, v, { wait = opts.wait, bonus = opts.bonus, megaphone = opts.megaphone, radio = opts.radio })
 end
 
 --- An NPC says one recording, { url, text? } (its subtitle over its head). WAITS while it is fetched; opts.wait:
 --- until it has been said; opts.line: which line it is (the gesture it starts with); opts.bonus: its Bonus range
---- (metres: heard and its subtitle seen that much further). true, or false and why.
+--- (metres: heard and its subtitle seen that much further); opts.megaphone, opts.radio: through a megaphone, on a
+--- frequency (devices). true, or false and why.
 function LoreVoice.playFrom(npcId, v, opts)
     opts = type(opts) == 'table' and opts or {}
     local n = npcs[npcId]
     if not n then return false, 'that NPC is not a lore character in the world now' end
+    local freq, fwhy = freqOf(opts.radio)
+    if freq == false then return false, fwhy end
     local p = opts.wait and promise.new() or nil
     local bonus = math.max(0, math.min(MAX_BONUS, tonumber(opts.bonus) or 0))
-    local ok, d, pwhy
+    local dev = { megaphone = opts.megaphone == true, radio = freq }
+    local me = {}
+    local ok, d, pwhy, key
     for _ = 1, 2 do
-        local key, why = voiceOf(npcId)
+        local why
+        key, why = voiceOf(npcId)
         if not key then return false, why end
+        -- CUTTING IN with another reach, megaphone or radio: the line it is saying stops first. Set before it, they
+        -- went to the old line's last second (the wait below, and fetching this one) as it played on: heard without its
+        -- megaphone, off its radio or on this line's frequency (WLVF's second review).
+        local was, vv = saying[npcId], voices[npcId]
+        if speaking[npcId] and was and vv and vv.key == key and ((vv.bonus or 0) ~= bonus
+            or (vv.megaphone == true) ~= dev.megaphone or vv.radio ~= dev.radio) then
+            was.cut = true
+            pcall(function() return exports[VOICE]:StopWorldVoice(key, 0) end)
+        end
         speaking[npcId], lastLine[npcId] = true, GetGameTimer()
-        -- This line's reach (its Bonus range, or the usual again): those it now reaches are connected before it plays.
-        if reach(npcId, key, bonus) then Wait(WIDEN_MS) end
+        -- This line's reach (its Bonus range, or the usual again) and its megaphone and radio: those it now reaches,
+        -- and those on its frequency, are connected before it plays.
+        local widened = reach(npcId, key, bonus)
+        local tuned = devices(npcId, key, dev)
+        if widened or tuned then Wait(WIDEN_MS) end
+        saying[npcId] = me
+        local mine = key
         ok, d, pwhy = pcall(function()
-            return exports[VOICE]:PlayWorldVoice(key, v.url, function(_, how)
+            return exports[VOICE]:PlayWorldVoice(mine, v.url, function(_, how)
+                -- (Stopped for a line cutting in: cut, as one whip_voice cuts.)
+                if me.cut then how = 'cut' end
                 -- Ended (not cut by a line that has the voice now): its usual reach again, and the next line waiting.
+                -- The megaphone goes down and the voice off the radio only with no next line: the next one changes
+                -- just what differs, so on the same frequency its listeners stay connected.
                 if how ~= 'cut' then
+                    if saying[npcId] == me then saying[npcId] = nil end
                     speaking[npcId] = nil
-                    if bonus > 0 then reach(npcId, key, 0) end
-                    nextQueued(npcId)
+                    if bonus > 0 then reach(npcId, mine, 0) end
+                    if not nextQueued(npcId) then devices(npcId, mine, {}) end
                 end
                 if p then
                     if playing[npcId] == p then playing[npcId] = nil end
@@ -424,7 +501,9 @@ function LoreVoice.playFrom(npcId, v, opts)
             end)
         end)
         if ok and d then break end
+        if saying[npcId] == me then saying[npcId] = nil end
         speaking[npcId] = nil
+        devices(npcId, key, {})   -- (not said: nothing held up, off the radio)
         -- Its voice went from under it (whip_voice restarted, the service dropped it): a new one, once.
         local gone = ok and type(pwhy) == 'string' and pwhy:find('no such', 1, true)
         if not gone then break end
@@ -436,13 +515,28 @@ function LoreVoice.playFrom(npcId, v, opts)
     end
     -- (`voice`: each game shows it as the line is heard there, not as it is asked for: client/bubbles.lua.)
     if v.text and Bubbles then Bubbles.show({ netId = n.netId }, v.text, { far = bonus, voice = true }) end
-    -- Its hands while it talks: the game that owns it plays GTA's gestures for the line's length.
-    if cfg().gestures then
+    -- Its hands while it talks (client/lore_reactions.lua): the game that owns it plays GTA's gestures for the line's
+    -- length (Config.LoreVoice.Gestures), or holds the megaphone up or the radio to its mouth (shown whatever that says:
+    -- it is what it talks into) as its voice has them: none for a megaphone or a frequency whip_voice refused.
+    local vv = voices[npcId]
+    local on = vv and vv.key == key and vv or {}
+    local hold = on.megaphone and 'megaphone' or (on.radio and 'radio') or nil
+    local line, gestures = type(opts.line) == 'string' and opts.line or nil, cfg().gestures == true
+    local now = GetGameTimer()
+    if hold or (held[npcId] and now < held[npcId]) then
+        -- A hold: EVERY game near holds its own copy of the prop, and lets go of it itself (one networked prop stayed in
+        -- the hand when the NPC went over to another player's game: WLVF's review), so every game is told; and so is
+        -- every game of the first line after one, which ends that hold, gestures on or off.
+        held[npcId] = hold and (now + d) or nil
+        TriggerClientEvent('whip_core:client:loreTalk', -1, n.netId, line, d, hold, gestures)
+    elseif gestures then
+        -- Gestures alone: only the game that owns it plays them.
+        held[npcId] = nil
         local ent = NetworkGetEntityFromNetworkId(n.netId)
         local owner = ent and ent ~= 0 and NetworkGetEntityOwner(ent) or nil
-        if owner and owner > 0 then
-            TriggerClientEvent('whip_core:client:loreTalk', owner, n.netId, type(opts.line) == 'string' and opts.line or nil, d)
-        end
+        if owner and owner > 0 then TriggerClientEvent('whip_core:client:loreTalk', owner, n.netId, line, d, nil, true) end
+    else
+        held[npcId] = nil
     end
     if p then
         -- Kept, so whip_voice stopping answers it (its line's end never would: onResourceStop below)
@@ -605,7 +699,7 @@ AddEventHandler('onResourceStop', function(res)
     for _, q in pairs(queued) do
         for _, item in ipairs(q) do if item.p and item.p.state == 0 then item.p:resolve('whip_voice stopped') end end
     end
-    voices, speaking, queued, playing = {}, {}, {}, {}
+    voices, speaking, queued, playing, saying = {}, {}, {}, {}, {}
 end)
 
 SecureEvent('whip_core:server:loreReactorsAsk', { rateLimit = 2000, whileDead = true, params = {} }, function(source)
@@ -777,6 +871,44 @@ local function bonusProp()
              slider = true, hint = 'Heard at full volume, and its subtitle seen (bigger), this much further than usual' }
 end
 
+-- Both cards' Through a megaphone and On the radio (devices, above). On the player's frequency: the one the radio of the
+-- player the card acts for is on when the line is said (whip_voice GetPlayerRadio); with their radio off, it is said
+-- out loud only.
+local RADIO = { 'No', 'On the player\'s frequency', 'On a frequency' }
+
+local function deviceProps()
+    return {
+        { key = 'megaphone', kind = 'bool', label = 'Through a megaphone', default = false,
+          hint = 'It holds a megaphone up: heard further, with the bullhorn sound' },
+        { key = 'radio', kind = 'select', label = 'On the radio', options = RADIO, default = RADIO[1],
+          hint = 'Also heard by everyone on that frequency, as a player\'s radio is' },
+        { key = 'freq', kind = 'number', label = 'Frequency', min = 100, max = 999, default = 100,
+          when = { key = 'radio', is = RADIO[3] }, check = function(v)
+              if type(v) == 'number' and not math.tointeger(v) then return 'Frequency is a whole number (a radio has no ' .. v .. ')' end
+          end },
+    }
+end
+
+--- A card's megaphone and radio for its line: { megaphone, radio = frequency | nil }.
+local function devicesOf(ctx, title)
+    local d = { megaphone = ctx:prop('megaphone') == true }
+    local r = ctx:prop('radio')
+    if r == RADIO[3] then
+        local f = ctx:prop('freq')
+        d.radio = math.tointeger(tonumber(f))
+        if not d.radio then ctx:log('%s: Frequency %s is not a whole number, so it is said out loud only', title, tostring(f)) end
+    elseif r == RADIO[2] then
+        local src = Director.playerOf(ctx)
+        local ok, f = false, nil
+        if src and GetResourceState(VOICE) == 'started' then
+            ok, f = pcall(function() return exports[VOICE]:GetPlayerRadio(src) end)
+        end
+        if ok and f then d.radio = math.tointeger(tonumber(f))
+        else ctx:log('%s: %s, so it is said out loud only', title, src and 'their radio is off' or 'no player to follow the radio of') end
+    end
+    return d
+end
+
 --- A lore character's NPC for a card: its NPC in this run's world, else the nearest of its NPCs to the player the card
 --- acts for. nil when it has none in the world.
 local function npcFor(ctx, key)
@@ -801,6 +933,7 @@ local ok, why = DirectorNodes.define({
         { key = 'line', kind = 'select', label = 'Line', options = LABELS, default = LABELS[1] },
         { key = 'wait', kind = 'bool', label = 'Wait until it has been said', default = true },
         bonusProp(),
+        table.unpack(deviceProps()),
     },
     run = function(ctx)
         local key = ctx:prop('lore')
@@ -816,8 +949,9 @@ local ok, why = DirectorNodes.define({
         end
         local waitIt = ctx:prop('wait') ~= false
         local bonus = tonumber(ctx:prop('bonus')) or 0
+        local dev = devicesOf(ctx, 'Lore Says')
         ctx:call(function()
-            local said, w = LoreVoice.sayFrom(npcId, line, { wait = waitIt, bonus = bonus })
+            local said, w = LoreVoice.sayFrom(npcId, line, { wait = waitIt, bonus = bonus, megaphone = dev.megaphone, radio = dev.radio })
             if not said then
                 ctx:log('Lore Says %s %s: %s', key, tostring(line), tostring(w))
                 return 'failed'
@@ -857,6 +991,7 @@ ok, why = DirectorNodes.define({
         { key = 'busy', kind = 'select', label = 'If it is already talking', options = IF_TALKING, default = IF_TALKING[1] },
         { key = 'wait', kind = 'bool', label = 'Wait until it has been said', default = true },
         bonusProp(),
+        table.unpack(deviceProps()),
     },
     run = function(ctx)
         local key = ctx:prop('lore')
@@ -880,8 +1015,10 @@ ok, why = DirectorNodes.define({
         local waitIt = ctx:prop('wait') ~= false
         local mode = IF_MODE[ctx:prop('busy')] or 'queue'
         local bonus = tonumber(ctx:prop('bonus')) or 0
+        local dev = devicesOf(ctx, 'Play Custom Voice Line')
         ctx:call(function()
-            local said, w = LoreVoice.sayRecording(npcId, v, { wait = waitIt, busy = mode, bonus = bonus })
+            local said, w = LoreVoice.sayRecording(npcId, v, { wait = waitIt, busy = mode, bonus = bonus,
+                megaphone = dev.megaphone, radio = dev.radio })
             if not said then
                 ctx:log('Play Custom Voice Line %s: %s', key, tostring(w))
                 return 'failed'
@@ -909,5 +1046,6 @@ exports('LoreSay', function(key, line, opts)
     if not DirectorLore.isLive(key) then return false, 'No lore character called ' .. tostring(key) end
     local npcId = LoreVoice.npcOf(key, { npcId = tonumber(opts.npcId), near = tonumber(opts.near) })
     if not npcId then return false, 'it has no NPC in the world now' end
-    return LoreVoice.sayFrom(npcId, line, { wait = opts.wait == true, busy = opts.busy, bonus = tonumber(opts.bonus) })
+    return LoreVoice.sayFrom(npcId, line, { wait = opts.wait == true, busy = opts.busy, bonus = tonumber(opts.bonus),
+        megaphone = opts.megaphone == true, radio = opts.radio })
 end)

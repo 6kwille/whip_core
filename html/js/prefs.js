@@ -1,8 +1,8 @@
 // ========================================
 // PLAYER PREFERENCES THE PAGE READS ITSELF (client/player_prefs.lua)
 //
-// Each player's own choices live in Lua and are changed on the pause menu's Server Settings page
-// (prefs-page.js). The few the page itself acts on — those declared with `page = true`, such as the menu
+// Each player's own choices live in Lua and are changed on the pause menu's Settings page, under Server
+// (settings-page.js). The few the page itself acts on — those declared with `page = true`, such as the menu
 // cursor's speed — arrive here ('playerPrefs': at start, at playerLoaded, and whenever one changes).
 //
 //     import { pref } from './prefs.js';
@@ -31,7 +31,7 @@ export function pref(key, fallback) {
     return v === undefined || v === null ? fallback : v;
 }
 
-/** The page's own guess at a value, until Lua's answer replaces it: the Server Settings page, while a slider is dragged
+/** The page's own guess at a value, until Lua's answer replaces it: the Settings page's Server rows, while a slider is dragged
  *  or a change is on its way, so what reads it (the minimap's preview) follows at once. */
 export function setPref(key, value) {
     values[key] = value;

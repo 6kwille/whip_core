@@ -36,7 +36,10 @@ Rockstar's terms for the platform apply (fivem.net/terms).
 - the car makers' logos in whip_core/html/img/manufacturers;
 - the game's names and data in WHIP's lists (weapons, peds, tattoos, voice lines, props, blips);
 - the map files in whip_autos_shop, and the map packs shipped beside WHIP (whip_homes_mirrorpark,
-  whip_graphics).
+  whip_graphics);
+- GTA's settings page, `pause_menu_pages_settings.gfx` in whip_core's stream/scaleform and stream_enhanced/scaleform,
+  which is the game's own with WHIP's questions added, and its class, decompiled, in whip_core/dev/pause_settings
+  (WHIP's added functions in it are WHIP's code).
 
 The emote preview videos in whip_media_previews were recorded in the game for WHIP: what they show is still
 Rockstar's.

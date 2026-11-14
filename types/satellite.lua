@@ -36,6 +36,17 @@ function WhipSatellite.register(fn) end
 ---@param fn fun()
 function WhipSatellite.onCoreLost(fn) end
 
+--- SERVER. Once your Whip.register functions have run, the console says "<your resource> started successfully!",
+--- unless something went wrong since your resource started (one of them threw, an error was caught in your code, or
+--- something was printed in red): then those lines are all it says. Each time whip_core is ready.
+function WhipSatellite.sayStarted() end
+
+--- Something wrong found while starting: printed in red with your resource's name, and Whip.sayStarted stays quiet.
+---     Whip.startProblem('engines.json is unreadable: %s', why)
+---@param fmt string as string.format's, with the values after it
+---@param ... any
+function WhipSatellite.startProblem(fmt, ...) end
+
 --- A registry of your own, with whip's rule: an entry is its first registrant's; the same again changes nothing;
 --- a changed one replaces it; another resource's is refused (said once in your console); a resource's entries
 --- go when it stops. For a resource others extend (apps, plugins, parts).
@@ -125,7 +136,7 @@ function WhipSatellite.configPage(def) end
 ---@param fn fun(value: any, old: any, path: string)
 function WhipSatellite.onConfigChanged(path, fn) end
 
---- CLIENT. A row of yours on the pause menu's Server Settings page: a choice each player makes for
+--- CLIENT. A row of yours on the pause menu's Settings page, under Server: a choice each player makes for
 --- themselves, kept by your resource (get / set). Call it at file scope; it registers inside
 --- Whip.register itself. docs.html#whip-playersetting has every field.
 ---@param def WhipPlayerSettingDef

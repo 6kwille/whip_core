@@ -1292,6 +1292,7 @@ body.searching .export-card { cursor: pointer; }
       <a class="nav-link" href="#voice-setup">Setting up whip_voice</a>
       <a class="nav-link" href="#voice-lore-calls">Lore phone calls</a>
       <a class="nav-link" href="#voice-lore-lines">Lore characters speak</a>
+      <a class="nav-link" href="#voice-speakers">Speakers</a>
       <a class="nav-link" href="#voice-api">For other resources <span class="nav-badge badge-shared">BOTH</span></a>
     </div>
     <div class="nav-group">
@@ -1418,7 +1419,7 @@ set sv_resourceFileDownloadTimeout 600000   # time for slow connections to downl
 
 <h3 id="quickstart-check">Check it works</h3>
 <ol>
-  <li>A few seconds after <code>Framework loaded successfully!</code>, the console prints the <strong>WHIP setup</strong> report. Each line marked <strong>FIX</strong> says what to change. Type <code>whipsetup</code> to see it again.</li>
+  <li>A few seconds after everything has started, the console prints the <strong>WHIP setup</strong> report. Each line marked <strong>FIX</strong> says what to change. When nothing needs fixing, <code>Framework loaded successfully!</code> follows it. Type <code>whipsetup</code> to see the report again.</li>
   <li>Join the server (your Cfx.re account needs a linked Steam account) and make a character.</li>
   <li><kbd>F2</kbd> opens the inventory, <code>/w</code> the quick tools and <code>/whip</code> the admin panel. To make someone else an admin, have them type <code>/w</code>: the console prints the <code>add_ace</code> line to add for them.</li>
 </ol>
@@ -1966,6 +1967,7 @@ shared_script '@whip_core/lib/satellite.lua'</code></pre>
 <tr><td><code>Whip.ready(timeoutMs?)</code></td><td>Waits (in a thread) until whip_core is ready. <code>false</code> on timeout.</td></tr>
 <tr><td><code>Whip.isReady()</code></td><td>Is whip_core running and ready right now?</td></tr>
 <tr><td><code>Whip.command(name, opts, fn)</code> (server)</td><td>A chat command behind a SecureEvent's checks: refused while the player is down (<code>whileDead = true</code> allows it), rate limited (three at once, then one a second; <code>rateLimit = false</code> for none), <code>ace = 'my.perm'</code>, and <code>dev = true</code> for the console and <code>whip.devtools</code> with developer mode on. <code>fn(source, args, raw)</code> runs in its own thread. Use it instead of <code>RegisterCommand</code> with your own checks.</td></tr>
+<tr><td><code>Whip.sayStarted()</code> · <code>Whip.startProblem(fmt, …)</code> (server)</td><td>One start line in the console instead of one per system. Once your <code>Whip.register</code> functions have run, it prints <code>&lt;your resource&gt; started successfully!</code>, unless something went wrong since your resource started (one of them threw, an error was caught, or something was printed in red); then those lines are all it prints. <code>Whip.startProblem('engines.json is unreadable: %s', why)</code> prints a problem in red with your resource's name. Call <code>Whip.sayStarted()</code> once, in a server file.</td></tr>
 <tr><td><code>Whip.registry(name, opts)</code> · <code>Whip.caller()</code></td><td>A registry of your own with WHIP's <a href="#patterns-registering">registration rule</a>, for a resource others extend (phone apps, MDT plugins): <code>local Apps = Whip.registry('app', { label = 'app' })</code>, then in your export <code>return Apps:add(Whip.caller(), id, def)</code>. Read <code>Apps.entries</code>, <code>Apps:get(id)</code>, <code>Apps:keysOf(owner)</code>.</td></tr>
 <tr><td><code>Whip.registerWith(resource, fn)</code></td><td>Runs <code>fn</code> now if <code>resource</code> is running and each time it starts, so registering with another resource's registry survives its restart.</td></tr>
 <tr><td><code>Whip.requires('1.0')</code> · <code>Whip.has(name)</code></td><td>Version checks. Put <code>whip_requires '1.0'</code> in your fxmanifest and the setup report flags an older whip_core; <code>Whip.requires</code> does the same from code. <code>Whip.has('GetBalance')</code> checks for one export. <code>whip_updates 'you/myresource'</code> there tells server owners when your GitHub repository has a newer release (<a href="#update-checks">Update checks</a>).</td></tr>
@@ -2839,7 +2841,7 @@ end</code></pre>
 <div class="export-body">
   <p>Scenery each player's own game makes as they come near: crates, barriers, cash on a table. Not networked, frozen where placed, and can't be picked up. The same <code>id</code> replaces the set; it goes when your resource stops or your tag is released.</p>
   <table class="param-table"><tr><th>spec</th><th>Type</th><th>Description</th></tr>
-  <tr><td>props</td><td>table</td><td>Up to <code>Config.PropSetMaxProps</code> (256) of <code>{ model, coords, rot?, heading?, interior?, light?, collision?, weapon?, attach?, attachOffset?, attachRot? }</code>. <code>rot</code>: <code>vector3(tiltForward, tiltSideways, heading)</code>, rotation order 2. <code>collision = false</code>: walk through. <code>interior = true</code> waits for an MLO and files it in its room; <code>light = true</code> lets a lamp light it</td></tr>
+  <tr><td>props</td><td>table</td><td>Up to <code>Config.PropSetMaxProps</code> (256) of <code>{ model, coords, rot?, heading?, interior?, light?, collision?, weapon?, attach?, attachOffset?, attachRot?, drawDistance? }</code>. <code>rot</code>: <code>vector3(tiltForward, tiltSideways, heading)</code>, rotation order 2. <code>collision = false</code>: walk through. <code>interior = true</code> waits for an MLO and files it in its room; <code>light = true</code> lets a lamp light it. <code>drawDistance</code> (m, up to 500): each game makes and draws it that far out instead of 150 m, past its model's own draw distance (a speaker heard from afar). Costs a little drawing, nothing on the network</td></tr>
   <tr><td>props[n].weapon</td><td>string?</td><td>A firearm's world model (<code>'WEAPON_RPG'</code>, or from <code>Whip.weapons</code>)</td></tr>
   <tr><td>props[n].attach</td><td>table?</td><td>Rides on <code>{ net = netId }</code>, <code>{ set = id, index = n }</code> or <code>{ index = n }</code>, offset by <code>attachOffset</code> (m) and <code>attachRot</code> (°). Back in place when the parent goes</td></tr>
   <tr><td>audience</td><td>'everyone'|table?</td><td>Default everyone, or <code>{ people = { … } }</code></td></tr>
@@ -8106,8 +8108,8 @@ end)</code></pre>
 <h3 id="interactions-at">at: where it lives</h3>
 <table class="event-table"><tr><th>at</th><th>What it is</th></tr>
 <tr><td><code>{ coords = vector3, heading? }</code></td><td>A prompt at a point. With <code>heading</code> it stands like a sign (not drawn from behind); without, it faces you. <code>follow = function() return x, y, z, heading end</code> moves it</td></tr>
-<tr><td><code>{ entity = handle, offset?, bone? }</code></td><td>On a local entity. <strong>Removed</strong> a few seconds after the entity goes (see <code>onGone</code>). For anything networked use <code>netId</code></td></tr>
-<tr><td><code>{ netId = n, offset?, bone? }</code></td><td>On a networked NPC or car, shown whenever it's streamed in, whatever its handle; nothing to re-add. The id can come from the server before it streams in</td></tr>
+<tr><td><code>{ entity = handle, offset?, bone?, heading? }</code></td><td>On a local entity. <strong>Removed</strong> a few seconds after the entity goes (see <code>onGone</code>). <code>offset</code> is in the entity's own frame. <code>heading</code> stands it like a sign at that turn from the entity's facing, turning as it turns (<code>180</code>: on its back); without one it faces the player. For anything networked use <code>netId</code></td></tr>
+<tr><td><code>{ netId = n, offset?, bone?, heading? }</code></td><td>On a networked NPC or car, shown whenever it's streamed in, whatever its handle; nothing to re-add. The id can come from the server before it streams in</td></tr>
 <tr><td><code>{ model = 'prop_vend_soda_01', offset?, heading?, faces?, perModel? }</code></td><td>On <strong>every prop of that model</strong> nearby (or a list of models), offered on the nearest, never from a car. <code>offset</code>: <code>x</code> across, <code>y</code> out of its face, <code>z</code> up. <code>heading</code> stands it like a sign at that turn from the prop's facing (try 0, 90, 180). <code>faces = 2</code> for two-sided props. <code>perModel = { ['prop_x'] = { offset, heading } }</code> overrides one model</td></tr>
 <tr><td><code>{ vehiclePart = 'hood' }</code></td><td>A choice on a car part: <code>'hood'</code> (shown only while open; engine work goes here), <code>'trunk'</code>, <code>'door_dside_f'</code>, <code>'door_pside_f'</code>, <code>'door_dside_r'</code>, <code>'door_pside_r'</code>, or the Get On / Board prompt of a <code>'bike'</code>, <code>'bicycle'</code> or <code>'boat'</code></td></tr>
 <tr><td><code>{ radial = true }</code></td><td>An F1 wheel entry with its <code>icon</code> and <code>label</code>, sorted by label. Aimed with mouse or stick, then click or A</td></tr>
@@ -8389,11 +8391,12 @@ end</code></pre>
 <tr><td>Let the player type one line</td><td><a href="#ui-composer"><code>OpenComposer</code></a> (<a href="#which-text-input">which input?</a>)</td></tr>
 <tr><td>Know if the player is busy, or a hotkey may act</td><td><a href="#ui-isgameinputfree"><code>IsGameInputFree</code></a></td></tr>
 <tr><td>Open your own NUI screen</td><td><a href="#ui-setscreenopen"><code>SetScreenOpen</code></a></td></tr>
+<tr><td>Let the player put a prop down where they want it</td><td><a href="#ui-placeobject"><code>PlaceObject</code></a></td></tr>
 <tr><td>Hold controls off, or freeze or hide the ped</td><td><a href="#ui-blockcontrols"><code>BlockControls</code></a>, <a href="#ui-holdplayerped"><code>HoldPlayerPed</code></a></td></tr>
 <tr><td>Show WHIP's yes or no questions on your own screen</td><td><a href="#registeraskchannel"><code>RegisterAskChannel</code></a></td></tr></table>
 
 <h3>Blocking components</h3>
-<p>A progress bar, <code>Input</code>, <code>Confirm</code>, <code>Alert</code> and <code>SkillCheck</code> wait for the player, so call them from a command or your own thread. They share these rules:</p>
+<p>A progress bar, <code>Input</code>, <code>Confirm</code>, <code>Alert</code>, <code>SkillCheck</code> and <code>PlaceObject</code> wait for the player, so call them from a command or your own thread. They share these rules:</p>
 <ul>
   <li><strong>One at a time.</strong> A call while another is up returns <code>false, 'busy'</code>. Other reasons come second the same way: <code>'cancelled'</code>, <code>'timeout'</code>, <code>'failed'</code> (<code>SkillCheck</code>).</li>
   <li><strong>Other screens.</strong> It closes the inventory, and is <code>'busy'</code> over another resource's <code>SetScreenOpen</code> screen. A dialog is also <code>'busy'</code> over the chat composer, radial wheel, <code>/whip</code> panel, character screen, appearance creator or furnisher.</li>
@@ -8612,6 +8615,26 @@ if not passed then return false, why == 'busy' and 'Finish what you are doing fi
     canStart = function(source) return HasCutters(source) or false, 'You need wire cutters' end,
     run = function(difficulty) return PlayWires(difficulty) end,
 })</code></pre>
+</div></div>
+
+<h3>Placing a prop</h3>
+
+<div class="export-card" id="ui-placeobject" data-search="place object prop ghost placement put down position rotate height vehicle attach">
+<div class="export-header"><span class="export-name">PlaceObject(model, opts?)</span><span class="export-side side-client">CLIENT</span></div>
+<div class="export-body">
+  <p>The item placer for a prop of yours: a see-through ghost of <code>model</code> follows where the player looks and sits on the surface. The mouse wheel turns it (triggers on a pad), the arrow keys raise and lower it (the D-pad), Ctrl makes both fine, E places it and C cancels. Nothing is made: it returns where, and your resource puts the prop there (with <a href="#showpropset"><code>ShowPropSet</code></a> or an object of its own). Waits.</p>
+  <table class="param-table"><tr><th>Param</th><th>Type</th><th>Description</th></tr>
+  <tr><td>model</td><td>string|number</td><td>The prop's model</td></tr>
+  <tr><td>opts.label</td><td>string?</td><td>What the hint calls it: "Place Speaker" (default "it")</td></tr>
+  <tr><td>opts.vehicles</td><td>boolean?</td><td><code>true</code>: it may go on a car (its roof, its bed). Otherwise a car is refused</td></tr>
+  <tr><td>opts.reach</td><td>number?</td><td>Metres from the camera (1 to 10; default an item's)</td></tr></table>
+  <div class="return-info"><strong>Returns: </strong><code>{ coords, rot }</code>, <code>rot</code> as <code>vector3(tiltForward, tiltSideways, heading)</code>. On a car, also <code>netId</code>, <code>offset</code> and <code>offsetRot</code> in the car's frame, as <code>attach</code>, <code>attachOffset</code> and <code>attachRot</code> take them. Or <code>false, why</code>: <code>'cancelled'</code>, <code>'busy'</code>, <code>'model'</code> (it won't load) or <code>'dead'</code></div>
+<pre><code class="lang-lua">CreateThread(function()
+    local spot = Whip.core:PlaceObject('prop_speaker_06', { label = 'Speaker', vehicles = true })
+    if not spot then return end                       -- cancelled, busy, ...
+    TriggerServerEvent('myres:server:placed', spot.coords, spot.rot, spot.netId, spot.offset, spot.offsetRot)
+end)</code></pre>
+  <div class="info-box warn"><strong>The answer is the player's word.</strong> Check it on the server: near them, and somewhere you allow.</div>
 </div></div>
 
 <h3>On-screen text</h3>
@@ -8981,7 +9004,7 @@ exports.whip_core:StopCamera()</code></pre>
 <p>Place your cameras in the Camera Creator (each key is one), press <kbd>F9</kbd> to play in game as your character, and record the screen with OBS or any recorder. <kbd>F5</kbd> rolls the timeline live (again to cut back), <kbd>Page Down</kbd> / <kbd>Page Up</kbd> or <kbd>Num 1</kbd>-<kbd>Num 9</kbd> cut between cameras, and <kbd>F9</kbd> returns to the editor. A rolling shot leaves a clean screen (<kbd>F6</kbd> hides chat), and with <em>Plays round</em> set to your vehicle, the cameras are placed round the car wherever it is.</p>
 
 <h3 id="driving-camera">The driving camera<span class="owner-tag">Server owners</span></h3>
-<p>A smooth chase camera for cars, motorbikes and quads, which each player switches on in the pause menu (Server Settings → Vehicles → <em>Smooth driving camera</em>); it's off unless you make it the default. It steps aside for aiming, GTA's cinematic camera, death and any other script's camera, then comes back, so nothing you write needs to know about it. Switch it off for everyone, change the default or set the shake in <code>Config.DrivingCamera</code> (<code>/whip</code> → Settings → Config → Vehicles).</p>
+<p>A smooth chase camera for cars, motorbikes and quads, which each player switches on in the pause menu (Settings → Server → Vehicles → <em>Smooth driving camera</em>); it's off unless you make it the default. It steps aside for aiming, GTA's cinematic camera, death and any other script's camera, then comes back, so nothing you write needs to know about it. Switch it off for everyone, change the default or set the shake in <code>Config.DrivingCamera</code> (<code>/whip</code> → Settings → Config → Vehicles).</p>
 <h2 id="client-camera">Camera API</h2>
 <p class="lede">Exports for scripted cameras. New to them? Read <a href="#guide-camera">Camera System</a> first. The play exports return <code>false, 'busy'</code> while another resource's camera is up; your own you may replace.</p>
 
@@ -9386,12 +9409,12 @@ end)</code></pre>
   <tr><td>keyKind / keyPattern / keyWhy</td><td>string|nil</td><td><code>map</code>: <code>keyKind = 'hash'</code> takes a model name and keeps its hash (as <code>GetEntityModel</code> returns). <code>'number'</code> keeps a digits-only key as a number (a mod slot, a wheel type). Name keys are checked against <code>keyPattern</code></td></tr></table>
 
 <h3 id="player-settings">Each player's own settings</h3>
-<p>A choice each player makes for their own screen (volume, units, shown or hidden) goes on the pause menu's <strong>Server Settings</strong> page as a row of yours. Your resource stores the value (its own KVP, on the player's PC); the page calls your <code>get</code> and <code>set</code>. The row goes when your resource stops and comes back when whip_core restarts.</p>
+<p>A choice each player makes for their own screen (volume, units, shown or hidden) goes on the pause menu's <strong>Settings</strong> page, under <strong>Server</strong>, as a row of yours. Your resource stores the value (its own KVP, on the player's PC); the page calls your <code>get</code> and <code>set</code>. The row goes when your resource stops and comes back when whip_core restarts.</p>
 
-<div class="export-card" id="whip-playersetting" data-search="whip.playersetting playersetting registerplayersetting player setting preference pause menu server settings satellite helper">
+<div class="export-card" id="whip-playersetting" data-search="whip.playersetting playersetting registerplayersetting player setting preference pause menu settings server satellite helper">
 <div class="export-header"><span class="export-name">Whip.playerSetting(def)</span><span class="export-side side-client">CLIENT</span></div>
 <div class="export-body">
-  <p>Adds a row to Server Settings. From WHIP's helper; call it at file scope, it registers inside <code>Whip.register</code> itself. A refusal is printed with the reason.</p>
+  <p>Adds a row to Settings, under Server. From WHIP's helper; call it at file scope, it registers inside <code>Whip.register</code> itself. A refusal is printed with the reason.</p>
   <table class="param-table"><tr><th>Field</th><th>Type</th><th>Description</th></tr>
   <tr><td>key</td><td>string</td><td>Unique: letters, digits, dots, dashes or underscores, up to 64. Start with your resource's name (<code>'mycafe.sounds'</code>)</td></tr>
   <tr><td>label</td><td>string</td><td>The row's name</td></tr>
@@ -10451,7 +10474,7 @@ end)</code></pre>
 <pre><code class="lang-lua">-- fxmanifest.lua of your pack
 whip_director_scenario 'scenarios/bank_job.json'
 whip_director_scenario 'scenarios/drug_run.json'</code></pre>
-<p>Each file is a scenario document as the editor saves it (<code>"format": 1</code>, at most 512 KB), with <code>"key"</code> (its key on every server) and <code>"requires": { "items": [...], "models": [...], "resources": [...] }</code>. Things it ships unplaced (<code>"coords": "spot"</code>) are placed by each server in a copy. <strong>Export as a pack</strong> (a Director admin, on a scenario in <code>/whip</code>) writes one in exactly this shape to <code>whip_core/pack_exports/</code>, with its manifest beside it.</p>
+<p>Each file is a scenario document as the editor saves it (<code>"format": 2</code>, at most 512 KB), with <code>"key"</code> (its key on every server) and <code>"requires": { "items": [...], "models": [...], "resources": [...] }</code>. Its <code>"taskTimes": 2</code> says a task time of 0 is no end and a give-up of 0 is never; in a document without it, either 0 is a tenth of a second. Things it ships unplaced (<code>"coords": "spot"</code>) are placed by each server in a copy. <strong>Export as a pack</strong> (a Director admin, on a scenario in <code>/whip</code>) writes one in exactly this shape to <code>whip_core/pack_exports/</code>, with its manifest beside it.</p>
 <ul>
 <li>whip_core reads each file when the resource starts, checks it, and offers it to a Director admin to accept.</li>
 <li>Accepted, it's a scenario like any other but <strong>read-only</strong>: Duplicate it to change it. It goes off while its resource is stopped and comes back on with it.</li>
@@ -10490,6 +10513,7 @@ whip_director_scenario 'scenarios/drug_run.json'</code></pre>
 <tr><td>Set Player Flag · If Player Flag</td><td>Remember something about the player for good (<a href="#player-flags">Player flags</a>), and branch on it</td></tr>
 <tr><td>Claim Car · Give Car</td><td>The run's car made the player's own (<code>ClaimVehicle</code>), or a new car of their own</td></tr>
 <tr><td>Fire Weapon</td><td>A Fixed Weapon (a firearm placed as a prop) fires real shots that hurt, in a Test too</td></tr>
+<tr><td>Play on Speakers · Stop Speakers</td><td>Props play a song from a Fivemanage link, in step, heard through walls like a voice, until stopped or the run ends (<a href="#voice-speakers">Speakers</a>)</td></tr>
 <tr><td>Send Signal · Wait for Script Event</td><td>Talk to your scripts (<a href="#director-api">For other resources</a>)</td></tr>
 <tr><td>Phone Call · Lore Says</td><td>A lore character phones a player or speaks (<a href="#voice-lore-calls">Lore phone calls</a>, <a href="#voice-lore-lines">Lore characters speak</a>)</td></tr>
 </table>
@@ -10506,7 +10530,7 @@ whip_director_scenario 'scenarios/drug_run.json'</code></pre>
 <p>Configure opens a thing's page, with these tabs among others:</p>
 <ul>
 <li><strong>Outfit.</strong> What an NPC wears, part by part. A freemode NPC (<code>mp_m_freemode_01</code>, <code>mp_f_freemode_01</code>) can open the players' <strong>character editor</strong> instead.</li>
-<li><strong>Tasks.</strong> What an NPC, car or prop does, top to bottom: go somewhere, take cover, shoot, drive, sound a siren, slide. Spawn cards start them (<em>Start its tasks</em>, on by default), or <strong>Start Tasks</strong> later. <strong>Play Tasks</strong> previews them on your screen only.</li>
+<li><strong>Tasks.</strong> What an NPC, car or prop does, top to bottom: go somewhere, take cover, shoot, drive, sound a siren, slide. Spawn cards start them (<em>Start its tasks</em>, on by default), or <strong>Start Tasks</strong> later. <strong>Play Tasks</strong> previews them on your screen only. A task's time (<em>For</em>, <em>Gives up after</em>) is hours, minutes and seconds, to a tenth. 0 is no end: the task goes on until its list is stopped or the run ends, and a new Shoot At, Aim At, Look At, Wander, Follow, Run Away From, fight, Play Emote, Cruise Around, Follow in a Car or Writhe starts there. A task that does one thing (Throw, Turn To Face, Sound the Horn, Flash the Lights, Brake, Speed Up To, and a prop's Slide To, Turn To and Fade) lasts its time, and its 0 is at once. A task that waits to be done gives up after its time; 0 is never.</li>
 <li><strong>Takes.</strong> Drives you record, up to three minutes, played back exactly by <strong>Play Scripted Driving Event</strong>, trailers included. <strong>Ride along</strong> puts the player at the wheel.</li>
 <li><strong>Eye sight.</strong> A guard notices the run's players in its cone, with nothing in between, as a meter fills (by default 2 s up close, 8 s at its full distance; sneaking halves the distance). Then <strong>Guard Spots You</strong> goes on. The server works out the cone and meter.</li>
 </ul>
@@ -10818,13 +10842,13 @@ end)</code></pre>
   <tr><td>group</td><td>string?</td><td>The picker's group: <code>move</code>, <code>look</code>, <code>fight</code>, <code>act</code>, <code>car</code>, <code>body</code>, <code>wait</code>, or your own, named by <code>groupTitle</code> (default: your namespace)</td></tr>
   <tr><td>kinds</td><td>string[]</td><td>Who can do it: <code>'npc'</code>, <code>'vehicle'</code>. A prop's tasks are whip_core's only</td></tr>
   <tr><td>timing</td><td>string?</td><td><code>'instant'</code> (done once started), <code>'timed'</code> (lasts <code>sec</code> seconds: the default), <code>'until'</code> (until done, giving up after <code>giveUp</code> seconds), <code>'either'</code> (the builder picks; <code>next = 'done'</code> or <code>'time'</code> is the default)</td></tr>
-  <tr><td>sec</td><td>number?</td><td>A timed step's seconds (3); the builder can change it</td></tr>
-  <tr><td>giveUp</td><td>number?</td><td>An until step's limit in seconds (30); the builder can change it</td></tr>
+  <tr><td>sec</td><td>number?</td><td>A timed step's seconds (3), up to 86399; 0 is no end: it lasts until its list is stopped. The builder can change it</td></tr>
+  <tr><td>giveUp</td><td>number?</td><td>An until step's limit in seconds (30), up to 86399; 0 is never: it waits until it's done. The builder can change it</td></tr>
   <tr><td>lasting</td><td>boolean?</td><td>It keeps going after its slot: a Wait after it keeps the thing at it</td></tr>
   <tr><td>once</td><td>boolean?</td><td>A new owner never plays it again (it would happen twice: a line of speech, a throw)</td></tr>
   <tr><td>standing</td><td>boolean?</td><td><code>false</code>: a standing NPC passes it over (it needs a run)</td></tr>
   <tr><td>fields</td><td>table[]?</td><td>Up to 8, each <code>{ key, kind, label, hint?, default?, required? }</code>. Kinds: <code>number</code> (min, max, unit; <code>slider = true</code> with a step needs min and max), <code>bool</code>, <code>select</code> (1 to 200 options; <code>look = 'seg'</code> shows 2 to 4 as buttons), <code>text</code> (max), <code>world</code> (a placed thing; <code>worldKind</code> limits it), <code>point</code> (key <code>'at'</code>), <code>target</code> (key <code>'target'</code>: the nearest player, who set the card off, a placed thing or a point)</td></tr>
-  <tr><td>run</td><td>function</td><td><code>run(entity, args, info)</code>, on the game that owns the thing, in a thread of its own (it may wait). In <code>args</code>, a world field is that thing's entity on this game (nil when it isn't here), a target <code>{ kind, entity, coords }</code>, a point <code>{ x, y, z, heading }</code>. <code>info</code>: <code>{ type, kind, timing, ms, preview }</code></td></tr>
+  <tr><td>run</td><td>function</td><td><code>run(entity, args, info)</code>, on the game that owns the thing, in a thread of its own (it may wait). In <code>args</code>, a world field is that thing's entity on this game (nil when it isn't here), a target <code>{ kind, entity, coords }</code>, a point <code>{ x, y, z, heading }</code>. <code>info</code>: <code>{ type, kind, timing, ms, preview }</code>, <code>ms</code> being the step's time (a week for a step with no end)</td></tr>
   <tr><td>done</td><td>function?</td><td>An until step's check, asked every quarter second: <code>true</code> done, <code>'failed'</code> failed, anything else not yet. Without it, the step is done when <code>run</code> returns (<code>false</code> or an error: failed)</td></tr></table>
   <div class="return-info"><strong>Returns: </strong><code>true</code>, or <code>false</code> when it isn't a task (printed). whip_core's own answer is printed when it refuses one. <code>Whip.removeTask(type)</code> takes one away on the side it's called on.</div>
 <pre><code class="lang-lua">-- shared/director.lua, in shared_scripts
@@ -10917,7 +10941,7 @@ Whip.weapons({
 </div></div>
 <h2 id="voice">Voice: keys, items, settings</h2>
 <p class="lede">whip_voice is WHIP's 3D voice chat. This page covers its keys, items, commands and settings; setup is under <a href="#voice-setup">Setting up whip_voice</a>, and your resource's calls under <a href="#voice-api">Voice for other resources</a>.</p>
-<p>Players hear the people near them in 3D: muffled through walls and doors, heard from the doorway or window between them, and different in cars and underwater. A phone call carries the phone's sound, and on speaker it works both ways. The radio is clear up close, then breaks up with static and fades out by its range. The server decides who hears whom, so a modified game can't listen in. whip_phone's calls, the <code>radio</code> and <code>megaphone</code> items, the HUD's voice light and your resources all go through it.</p>
+<p>Players hear the people near them in 3D: muffled through walls and doors, heard from the doorway or window between them, and different in cars and underwater. Outdoors, sound bends round what is in the way (over a low wall, round a building's corner, through a yard's gateway) and is heard from where it comes round, more muffled the sharper the bend: a post hardly at all, a right-angle corner about 6 dB, a building with no way round a lot. Music, such as a speaker's, comes round corners by two ways at once, so walking past a row of alleys it fades from one gap to the next rather than jumping. A phone call carries the phone's sound, and on speaker it works both ways. The radio is clear up close, then breaks up with static and fades out by its range. The server decides who hears whom, so a modified game can't listen in. whip_phone's calls, the <code>radio</code>, <code>megaphone</code> and <code>speaker</code> items, the HUD's voice light and your resources all go through it.</p>
 
 <h3>Keys</h3>
 <table class="event-table">
@@ -10930,11 +10954,12 @@ Whip.weapons({
 <p>Players rebind them in <em>Settings &gt; Key Bindings &gt; FiveM</em>.</p>
 
 <h3>Items</h3>
-<p>whip_voice registers both. Give them like any item: <code>exports.whip_core:AddItem(source, 'radio', 1)</code>.</p>
+<p>whip_voice registers these. Give them like any item: <code>Whip.core:AddItem(source, 'radio', 1)</code>.</p>
 <ul>
 <li><strong><code>megaphone</code></strong>: held up, your voice carries 6 times as far and sounds like a bullhorn. Use it again to put it away; it also goes down if you get in a car, draw a weapon, drop it or die.</li>
 <li><strong><code>radio</code></strong>: a 3D handheld radio in the bottom right, worked with the mouse (or a controller: its buttons show beside it). The right knob is power and volume; the middle knob is the channel, 100 to 999, which is the frequency. Everyone on the same frequency hears you on <kbd>Caps Lock</kbd>: clear up to 500 m, then cutting out with static, gone by 1.5 km. <kbd>Esc</kbd> puts it away and it keeps working; it turns off if you lose the radio. While you're down you still hear it but can't talk on it, open it or change it.</li>
 <li><strong>Radio on speaker</strong>: the grey button on top. The people near you hear your radio too, from where you stand, but not louder for you. Someone on the same frequency hears it on their own radio only, never twice.</li>
+<li><strong><code>speaker</code></strong>: put down anywhere, or on a car, it plays a song for everyone around. A prompt behind it picks the song and has Play, Stop, Volume and Range.</li>
 </ul>
 
 <h3>Commands</h3>
@@ -10945,7 +10970,7 @@ Whip.weapons({
 <tr><td><code>/voicevolume 0-200</code></td><td>everyone</td><td>How loud the people around you are (100 normal, 0 mutes them). Kept on your PC</td></tr>
 <tr><td><code>/voicedebug</code></td><td>developer mode</td><td>What each voice goes through (muffled by what, heard from which doorway), and every door and window of the building you're in</td></tr>
 </table>
-<p>Each player also sets <em>Voice volume</em>, <em>Phone call volume</em> (the phone's <em>Settings &gt; Sounds &gt; Call volume</em> too), <em>Radio volume</em> and <em>Background noise suppression</em> in the pause menu's Server Settings (<em>Chat &amp; voice</em>), kept on their PC. Noise suppression changes at once, with a moment's silence.</p>
+<p>Each player also sets <em>Voice volume</em>, <em>Phone call volume</em> (the phone's <em>Settings &gt; Sounds &gt; Call volume</em> too), <em>Radio volume</em> and <em>Background noise suppression</em> in the pause menu's Settings (Server → <em>Chat &amp; voice</em>), kept on their PC. Noise suppression changes at once, with a moment's silence.</p>
 
 <h3>Settings<span class="owner-tag">Server owners</span></h3>
 <p>In <code>whip_voice/config.lua</code>:</p>
@@ -10958,6 +10983,7 @@ Whip.weapons({
 <tr><td><code>Config.MaxVoices</code></td><td>100</td><td>The most voices one player is connected to at once (the nearest)</td></tr>
 <tr><td><code>Config.Megaphone.rangeMultiplier</code></td><td>6</td><td>How many times further a megaphone voice carries</td></tr>
 <tr><td><code>Config.Megaphone.carMuffle</code></td><td>4</td><td>dB a closed car takes off a megaphone voice (a normal voice: <code>Config.Muffle.car</code>, 9)</td></tr>
+<tr><td><code>Config.Speaker</code></td><td>Fivemanage links, 100 %, 30 m (up to 300), 3 each, seen from 300 m</td><td>The speaker item: the links it plays, a new one's volume and range, the furthest a player may set it, how many one character may have out (64 on the server), and how far away it's seen (<code>drawDistance</code>)</td></tr>
 <tr><td><code>Config.Radio</code></td><td>Caps Lock, 500 / 1500 m, 100-999</td><td>The radio's key, how far it's clear, how far it reaches, its frequencies</td></tr>
 <tr><td><code>Config.Radio.staticVolume</code></td><td>0.06</td><td>Static in the gaps of a weak radio voice (0 none, 1 very loud)</td></tr>
 <tr><td><code>Config.Radio.distortion</code></td><td>1.0</td><td>How garbled a weak radio voice gets (0 clean, 1.5 the most)</td></tr>
@@ -11063,6 +11089,7 @@ set whip_voice_api    "https://your-project.livekit.cloud"   # where this FiveM 
 <li><strong>Lore Says</strong> (the green <em>Lore</em> group): <em>Who</em> (empty is the scenario's own), <em>Line</em>, and <em>Wait until it has been said</em>. It goes on by <em>done</em> or <em>failed</em> (no NPC in the world, no such line, or no voice bot; the run's log says why).</li>
 <li><strong>Play Custom Voice Line</strong>, for a line one scenario needs: <em>Who</em>, a <em>Recording link</em> (the same links accepted), an optional <em>Subtitle</em>, <em>If it is already talking</em> (say it after, the default; cut in; or skip it) and <em>Wait until it has been said</em>. It goes on by <em>Said</em>, <em>Could not</em> or <em>Took too long</em>.</li>
 <li><strong>Bonus range</strong> (both cards, 0 to 250 m): for a line said from a car ahead or across a yard. The character is heard at full volume that much further out, fading over the usual distance past it, and its subtitle is seen as far. It waits a second first, so players now in reach hear it from the start. The next line is back to normal.</li>
+<li><strong>Through a megaphone</strong> (both cards): its NPC holds one up as a player does, and the line carries further with the bullhorn sound. <strong>On the radio</strong> says it on a frequency as well as out loud: <em>On the player's frequency</em> (the one the radio of the player the card acts for is on; with their radio off it's said out loud only, and the run's log says so) or <em>On a frequency</em> (100 to 999). Everyone on that frequency hears it as a player's radio, breaking up with distance, while its NPC holds a radio to its mouth. Both last for that line only. The radio needs the voice bot from whip_voice 1.4.0 or newer.</li>
 </ul>
 
 <h3>3. The settings<span class="owner-tag">Server owners</span></h3>
@@ -11072,7 +11099,7 @@ set whip_voice_api    "https://your-project.livekit.cloud"   # where this FiveM 
 <div class="export-card" data-search="loresay lore character say voice line speak npc">
 <div class="export-header"><span class="export-name">LoreSay(key, line, opts)</span><span class="export-side side-server">SERVER</span></div>
 <div class="export-body">
-  <p>A lore character says one of its voice lines from its NPC, as the Lore Says card does. <code>opts = { near = source, npcId, wait, busy }</code>: <code>near</code> picks its NPC nearest that player (else <code>npcId</code>, else the first); <code>wait = true</code> returns once it's been said; <code>busy</code> (<code>'skip'</code>, <code>'queue'</code>, <code>'cut'</code>) overrides the line's <em>If talking</em>. It <strong>waits</strong> while the recording is fetched: call it from a thread or a handler.</p>
+  <p>A lore character says one of its voice lines from its NPC, as the Lore Says card does. <code>opts = { near = source, npcId, wait, busy, bonus, megaphone, radio }</code>: <code>near</code> picks its NPC nearest that player (else <code>npcId</code>, else the first); <code>wait = true</code> returns once it's been said; <code>busy</code> (<code>'skip'</code>, <code>'queue'</code>, <code>'cut'</code>) overrides the line's <em>If talking</em>; <code>bonus</code> is its Bonus range in metres; <code>megaphone = true</code> says it through a megaphone; <code>radio</code> is a frequency to say it on too, a whole number (whip_voice's <code>GetPlayerRadio(source)</code> gives a player's; one that isn't whole is refused, and one whip_voice won't take is said out loud only, with no radio in its hand, and named in the console). It <strong>waits</strong> while the recording is fetched: call it from a thread or a handler.</p>
   <div class="return-info"><strong>Returns: </strong><code>true</code> (or <code>true, 'queued'</code>), or <code>false, why</code>: no such character, no NPC of it in the world, no such line, no voice bot. With <code>wait</code>, also when whip_voice stopped or the NPC went before it was said</div>
 <pre><code class="lang-lua">local ok, why = exports.whip_core:LoreSay('irwin', 'positive', { near = source })</code></pre>
 </div></div>
@@ -11083,6 +11110,32 @@ set whip_voice_api    "https://your-project.livekit.cloud"   # where this FiveM 
   <p>Checks a profile picture as WHIP takes one, for a resource that keeps its own (whip_phone's contact card). The link must be on the accepted sites (<em>Picture links accepted</em>); an empty link is no picture. <code>frame</code> is <code>{ x, y, z }</code> as Edit picture makes it: the middle, 0 to 100 across and down, and the zoom, 1 to 3. It comes back cleaned; the plain framing (the middle, no zoom) is none.</p>
   <div class="return-info"><strong>Returns: </strong><code>true, frame</code> (<code>frame</code> nil for none, and for an empty link), or <code>false, why</code></div>
 </div></div>
+<h2 id="voice-speakers">Speakers</h2>
+<p class="lede">A scenario's props play a song in the world: speakers on every wall of a gang's hideout as the players storm it, or a stack each side of a stage. Everyone near hears it from each speaker, in step, through walls and doorways as a voice carries. It needs whip_voice and its voice bot (1.5.0 or newer), which plays the song; players never download it.</p>
+<p>More speakers add up as real ones do: two are a little louder than one, not twice as loud. Far off, the song is heard later and duller, and a speaker on a moving car rises and falls in pitch as it passes.</p>
+
+<h3>1. Place the speakers<span class="owner-tag">Server owners</span></h3>
+<p>Any prop placed on the World tab (<strong>+ Prop</strong>) can be one: <code>prop_speaker_06</code>, a boombox, a radio on a shelf. Give the ones that play together the same <strong>Group</strong>, and one card can name them all. A speaker attached to a car or an NPC plays from it as it moves.</p>
+
+<h3>2. Play a song<span class="owner-tag">Server owners</span></h3>
+<p>Upload the song to Fivemanage, as for a <a href="#voice-lore-calls">lore phone call</a>, and add a <strong>Play on Speakers</strong> card (the <em>World</em> group):</p>
+<table class="event-table">
+<tr><th>Setting</th><th>Does</th></tr>
+<tr><td>Speakers</td><td>The props that play it, or a group (up to 32)</td></tr>
+<tr><td>Song link</td><td>Its Fivemanage link: mp3, ogg or wav, up to 10 minutes. The play button beside it plays it to you</td></tr>
+<tr><td>Loop</td><td>On: over and over until Stop Speakers or the run's end. Off: once</td></tr>
+<tr><td>Volume</td><td>0 to 200 %</td></tr>
+<tr><td>Heard up to</td><td>How far from each speaker it carries (5 to 300 m)</td></tr>
+<tr><td>Full volume within</td><td>Full volume this close to a speaker</td></tr>
+<tr><td>Speaker sound</td><td>0 % is clear. Higher sounds more like a cheap speaker: less bass and treble, a honk in the middle, grit when pushed. 100 % is tinny</td></tr>
+<tr><td>Tone</td><td>On: Bass, Mids and Treble, each -12 to +12 dB</td></tr>
+<tr><td>Fade in</td><td>Seconds from silence to full</td></tr>
+<tr><td>Wait until it has played</td><td>With Loop off, the card goes on when the song ends instead of as it starts</td></tr>
+</table>
+<p>It goes on by <em>Done</em>, <em>Could not</em> (no speakers, a link that isn't accepted, or no voice bot; the run's log says why) or <em>Took too long</em>. A speaker plays one song at a time: a new one stops the one playing there.</p>
+
+<h3>3. Stop it<span class="owner-tag">Server owners</span></h3>
+<p><strong>Stop Speakers</strong> stops what its speakers play, over its <em>Fade out</em> (0 to 30 s; 0 is at once). Every song a run plays stops when the run ends.</p>
 <h2 id="voice-api">Voice for other resources</h2>
 <p class="lede">Your resource can use voice (a call, an intercom, a dispatch channel, a bugged room) without knowing which voice system runs. Never call one by name: <code>Whip.voice</code>, in <code>@whip_core/lib/satellite.lua</code>, calls whichever is running.</p>
 <p>A <strong>line</strong> is a set of players who hear each other wherever they are, through a sound you choose: with their talk key (a <code>'voice'</code> line) or the radio key (<code>'radio'</code>). The people around them still hear them. A line is yours, and closes when your resource stops. Everything here is server side, except asking which voice system runs. Recordings played on a line or from an NPC are in <code>whip_voice/docs/LINES.md</code>.</p>
@@ -11291,6 +11344,7 @@ end</code></pre>
 <tr><td><code>AccessoryStrip</code></td><td><code>true</code></td><td>The phone, car key and cash strip beside the inventory (a key there goes in the ignition). <code>false</code>: its contents move to the inventory at next login. <em>Next restart</em>. Read pockets with <a href="#inventory"><code>GetPockets()</code></a></td></tr>
 <tr><td><code>ContainerSlots</code></td><td>player 30, accessory 5</td><td>Slots per player container</td></tr>
 <tr><td><code>MaxWeight</code></td><td>player 80, accessory 10</td><td>kg. <code>player</code> includes the strip; <code>accessory</code> is the strip alone</td></tr>
+<tr><td><code>WeightUnit</code></td><td><code>'kg'</code></td><td>What the inventory and shops show weights in until a player picks their own (Settings → Server → Map &amp; HUD): <code>'kg'</code> is grams under a kilo and kilograms from one up, <code>'lb'</code> ounces under a pound and pounds from one up. Weights in config.lua and <code>RegisterItem</code> are kilograms either way</td></tr>
 <tr><td><code>DropOnFullInventory</code></td><td><code>true</code></td><td><code>AddItem</code> drops what can't fit at the player's feet (<a href="#full-inventory">full inventories</a>). <code>false</code>: it returns <code>false</code> and creates nothing</td></tr>
 <tr><td><code>MaxGroundPilesPerDrop</code></td><td><code>50</code></td><td>Most piles one drop makes (one per slot's worth); past it, items are shared across this many</td></tr>
 <tr><td><code>EnableInventoryUI</code></td><td><code>true</code></td><td><code>false</code>: no WHIP inventory screen (<a href="#custom-inventory-ui">Replacing the inventory UI</a>); the system keeps running</td></tr>
@@ -11330,7 +11384,7 @@ end</code></pre>
 <h3>HUD, minimap and controls</h3>
 <table class="event-table">
 <tr><th>Setting</th><th>Default</th><th>Description</th></tr>
-<tr><td><code>MinimapMask</code></td><td><code>'rounded'</code></td><td><code>'square'</code>, <code>'rounded'</code> or <code>'circle'</code>. The minimap is WHIP's own 3D map; players tune it in Server Settings → <em>Minimap</em>. GTA's radar shows only in <code>/radardebug</code></td></tr>
+<tr><td><code>MinimapMask</code></td><td><code>'rounded'</code></td><td><code>'square'</code>, <code>'rounded'</code> or <code>'circle'</code>. The minimap is WHIP's own 3D map; players tune it in Settings → Server → <em>Minimap</em>. GTA's radar shows only in <code>/radardebug</code></td></tr>
 <tr><td><code>HudSkin</code></td><td><code>'black'</code></td><td><code>'black'</code>: black discs in a draining white rim, a framed minimap, a blue route. <code>'classic'</code>: discs that fill white, in a capsule. Not the vehicle dial</td></tr>
 <tr><td><code>AimDot</code></td><td><code>true</code></td><td>A dot replaces GTA's reticle (not for melee or the petrol can), red when the muzzle is against a wall</td></tr>
 <tr><td><code>HudDeveloperMark</code></td><td><code>true</code></td><td>The amber developer-mode mark among the gauges. <code>false</code> hides it, for filming</td></tr>
@@ -11399,7 +11453,7 @@ end</code></pre>
 <tr><td><code>VehicleStatsTickInterval</code></td><td><code>1</code></td><td>Seconds between checks of stats with a <code>decay</code>. <em>Next restart</em></td></tr>
 <tr><td><code>VehiclePositionSaveInterval</code> / <code>VehiclePositionEpsilon</code></td><td><code>30</code> / <code>2.0</code></td><td>Seconds between car position saves; metres moved to save</td></tr>
 <tr><td><code>VehicleStorageKeepRange</code></td><td><code>5.5</code></td><td>How far a player can stray with the boot open. No effect below <code>VehicleTrunkRange</code> + 3.0</td></tr>
-<tr><td><code>DrivingCamera</code></td><td><code>{ Enabled = true, Default = false, Shake = 1.0 }</code></td><td>The <a href="#driving-camera">driving camera</a> in Server Settings → Vehicles: <code>Enabled</code> (offered at all), <code>Default</code> (on for a player who never chose), <code>Shake</code> (0 to 3; 1 as made)</td></tr>
+<tr><td><code>DrivingCamera</code></td><td><code>{ Enabled = true, Default = false, Shake = 1.0 }</code></td><td>The <a href="#driving-camera">driving camera</a> in Settings → Server → Vehicles: <code>Enabled</code> (offered at all), <code>Default</code> (on for a player who never chose), <code>Shake</code> (0 to 3; 1 as made)</td></tr>
 <tr><td><code>BikeAutoHelmet</code></td><td><code>false</code></td><td><code>true</code>: GTA's helmet on a motorbike</td></tr>
 <tr><td><code>ExperimentalDriveSync</code></td><td><code>false</code></td><td><code>true</code>: every game plays a <a href="#director">Director</a> car's recorded drive on its own copy</td></tr>
 <tr><td><code>InteractPress</code></td><td>table</td><td>The hand press (<a href="#interactions-press"><code>PlayPress</code></a>): <code>enabled</code>, <code>maxDistance</code> (2.5 m), <code>followHand</code></td></tr>
@@ -12371,7 +12425,7 @@ end)</code></pre>
   // ---- WAITS: the exports that can wait (on the database, on the player), each card's badge. The same list as
   // the ---@async marks in types/server.lua and types/client.lua. `node dev/waits.js --write` writes this line and
   // lib/satellite.lua's from the code; `--check` keeps all three the same ----
-  var WAITS = {"server":["AddCatalogItem","AddItem","AdoptVehicle","BankDeposit","BankSystemDeposit","BankSystemTransfer","BankSystemWithdraw","BankTransfer","BankWithdraw","CanGrantBankAccess","CanHirePlayer","CanUseBankAccount","ChargePlayer","ClaimVehicle","ClearAllVehicleData","ClearVehicleData","CloseBankAccount","ClosePanel","ClosePlayerInventory","CloseStore","CommitWithAction","CreateBankAccount","CreateContainer","CreateDoor","CreateGarage","CreateGroundItem","CreateJobRole","CreateOwnedVehicle","CreateShop","DeleteContainer","DeleteDoor","DeleteGarage","DeleteGroundItem","DeleteJob","DeleteJobRole","DeleteShop","DeleteZone","DespawnVehicle","EnsureContainer","EnsureDoor","EnsureDoors","EnsureJob","EnsureShop","EnsureTable","EnsureZone","FlushActivityLog","GetBalance","GetBankAccessList","GetBankAccount","GetBankTransactions","GetCharacterBankAccounts","GetCharacterNames","GetDefaultBankAccount","GetItemAt","GetJobBankAccounts","GetPermissionHolders","GetPlayerMetadata","GetPlayerVehicleKeys","GetScenarioStats","GetShopPrices","GetShopStock","GiveOnLogin","GivePropertyKey","GiveVehicleKey","GrantBankAccess","GrantPermission","HasVehicleKey","HirePlayer","HoldDoor","HoldMoney","IsCharacterDeleted","LinkDoors","LogActivity","LoreSay","OpenPlayerInventory","OpenStore","PayAsLore","PayPlayer","Progress","RefundPlayer","RegisterPropertyPack","RegisterProps","RegisterVehicles","RemoveCatalogItem","RemoveItem","RemovePropertyKey","RemoveVehicleKey","RequestScreenshot","RevokeBankAccess","RevokePermission","SavePlayer","SetBankAccountFrozen","SetHeldItem","SetItemMetadata","SetPlayerMetadata","SetPropertyOwner","SetPropertyTheme","SetShopItemPrice","SetShopLayout","SetVehicleAppearance","SetVehicleData","SetVehicleGarage","SetVehicleLocked","SetVehiclePlate","SettleMoneyHold","SkillCheck","SpawnTempVehicle","SpawnVehicle","StoreCount","StoreGive","StoreMove","StoreRead","StoreTake","SwitchScenario","TestDirectorCard","TestDirectorScenario","TransferVehicle","UnlinkDoors","UpdateContainer","UpdateDoor","UpdateGarage","UpdateJob","UpdateJobRole","UpdateShop"],"client":["Alert","Callback","ClockOff","ClockOn","Confirm","EnterCharacter","FreeHands","GetPlayerFullName","Input","LoadAnimDict","LoadAnimSet","LoadModel","LoadPtfxAsset","LoadTextureDict","OpenKeyboard","OrbitCamera","PlayCameraPath","PlayCameraSequence","PressScreen","Progress","ReadScreen","ResolveVehicle","SkillCheck","TakeScreenshot","TakeVehicleControl"]};
+  var WAITS = {"server":["AddCatalogItem","AddItem","AdoptVehicle","BankDeposit","BankSystemDeposit","BankSystemTransfer","BankSystemWithdraw","BankTransfer","BankWithdraw","CanGrantBankAccess","CanHirePlayer","CanUseBankAccount","ChargePlayer","ClaimVehicle","ClearAllVehicleData","ClearVehicleData","CloseBankAccount","ClosePanel","ClosePlayerInventory","CloseStore","CommitWithAction","CreateBankAccount","CreateContainer","CreateDoor","CreateGarage","CreateGroundItem","CreateJobRole","CreateOwnedVehicle","CreateShop","DeleteContainer","DeleteDoor","DeleteGarage","DeleteGroundItem","DeleteJob","DeleteJobRole","DeleteShop","DeleteZone","DespawnVehicle","EnsureContainer","EnsureDoor","EnsureDoors","EnsureJob","EnsureShop","EnsureTable","EnsureZone","FlushActivityLog","GetBalance","GetBankAccessList","GetBankAccount","GetBankTransactions","GetCharacterBankAccounts","GetCharacterNames","GetDefaultBankAccount","GetItemAt","GetJobBankAccounts","GetPermissionHolders","GetPlayerMetadata","GetPlayerVehicleKeys","GetScenarioStats","GetShopPrices","GetShopStock","GiveOnLogin","GivePropertyKey","GiveVehicleKey","GrantBankAccess","GrantPermission","HasVehicleKey","HirePlayer","HoldDoor","HoldMoney","IsCharacterDeleted","LinkDoors","LogActivity","LoreSay","OpenPlayerInventory","OpenStore","PayAsLore","PayPlayer","Progress","RefundPlayer","RegisterPropertyPack","RegisterProps","RegisterVehicles","RemoveCatalogItem","RemoveItem","RemovePropertyKey","RemoveVehicleKey","RequestScreenshot","RevokeBankAccess","RevokePermission","SavePlayer","SetBankAccountFrozen","SetHeldItem","SetItemMetadata","SetPlayerMetadata","SetPropertyOwner","SetPropertyTheme","SetShopItemPrice","SetShopLayout","SetVehicleAppearance","SetVehicleData","SetVehicleGarage","SetVehicleLocked","SetVehiclePlate","SettleMoneyHold","SkillCheck","SpawnTempVehicle","SpawnVehicle","StoreCount","StoreGive","StoreMove","StoreRead","StoreTake","SwitchScenario","TestDirectorCard","TestDirectorScenario","TransferVehicle","UnlinkDoors","UpdateContainer","UpdateDoor","UpdateGarage","UpdateJob","UpdateJobRole","UpdateShop"],"client":["Alert","Callback","ClockOff","ClockOn","Confirm","EnterCharacter","FreeHands","GetPlayerFullName","Input","LoadAnimDict","LoadAnimSet","LoadModel","LoadPtfxAsset","LoadTextureDict","OpenKeyboard","OrbitCamera","PlaceObject","PlayCameraPath","PlayCameraSequence","PressScreen","Progress","ReadScreen","ResolveVehicle","SkillCheck","TakeScreenshot","TakeVehicleControl"]};
   (function () {
     var waits = { server: {}, client: {} };
     ['server', 'client'].forEach(function (side) { WAITS[side].forEach(function (n) { waits[side][n] = true; }); });

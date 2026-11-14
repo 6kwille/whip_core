@@ -37,7 +37,7 @@ import { escapeHtml } from './utils.js';
 import { pref } from './prefs.js';
 
 // the circle at a full push: screen heights a second (the inventory's), times the player's own "Menu cursor speed"
-// (Server Settings: 50-200%, read each frame)
+// (Settings → Server: 50-200%, read each frame)
 const SPEED = 1.3;
 const CURVE = 1.6;      // a light push is slow and exact: speed grows as push ^ this
 const SLOW = 0.45;      // over something it can press, it slows to this share
@@ -98,8 +98,8 @@ for (const type of MOUSE_EVENTS) {
     }, true);
 }
 
-/** A node's box in screen pixels, whatever CEF 103 measured it in. Shared: the Server Settings page's sliders
- *  (prefs-page.js) are inside a zoomed box too. */
+/** A node's box in screen pixels, whatever CEF 103 measured it in. Shared: the Settings page's sliders
+ *  (settings-page.js) are inside a zoomed box too. */
 export function screenRect(node) {
     const r = node.getBoundingClientRect(), k = rectScale(node);
     return { left: r.left * k, right: r.right * k, top: r.top * k, bottom: r.bottom * k,
