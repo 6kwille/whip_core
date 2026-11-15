@@ -1,11 +1,11 @@
 -- ============================================
--- Dev Tools — Invisible, God Mode, Restore Health & Armour, Kill Me, Repair Vehicle
+-- Dev Tools — Invisible, God Mode, Restore Player Cores, Kill Me, Repair Vehicle
 -- ============================================
 --
 -- Five /w entries for whoever has dev tools:
 --   Invisible                nobody else sees you; you see yourself at half opacity
 --   God Mode                 no damage, and health kept full whatever else tries to take it
---   Restore Health & Armour  your health and armour full
+--   Restore Player Cores     your health, armour, food and drink full
 --   Kill Me                  you go down at once, as any death does
 --   Repair Vehicle           the car you are in repaired, driving it or not
 --
@@ -60,11 +60,11 @@ ToolHandlers['God Mode'] = {
     end,
 }
 
--- ---- Restore Health & Armour ----
+-- ---- Restore Player Cores ----
 
---- A one-off, not a toggle: it never stays lit (isActive). Health and armour are the server's
+--- A one-off, not a toggle: it never stays lit (isActive). Health, armour, food and drink are the server's
 --- (server/devtools.lua), which says when it is done.
-ToolHandlers['Restore Health & Armour'] = {
+ToolHandlers['Restore Player Cores'] = {
     enter = function() TriggerServerEvent('whip_core:server:devRestore') end,
     exit = function() end,
     isActive = function() return false end,
