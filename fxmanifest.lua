@@ -53,6 +53,7 @@ shared_script 'shared/interact_spec.lua'
 shared_script 'shared/cam_math.lua'
 shared_script 'shared/cam_sequence.lua'
 shared_script 'shared/take_track.lua'
+shared_script 'shared/throw_aim.lua'
 -- Before any Director file on either side.
 shared_script 'shared/director/kit.lua'
 shared_script 'shared/director/steps.lua'
@@ -444,6 +445,7 @@ client_scripts {
     'tools/property_wizard.lua',
     'tools/property_scale.lua',
     'tools/property_probe.lua',
+    'tools/throw_test.lua',   -- /throwtest: ThrowGroundItem tried in the world (a PropertyEditor mode)
 
     -- Last: it announces whip_core:onReady, which has to mean every file above has run.
     'client/ready.lua',
