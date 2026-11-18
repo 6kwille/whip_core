@@ -2663,6 +2663,8 @@ end)
 
 --- Handoff animation, triggered by the server on giver and receiver. Animation only: the item moves as the server's held prop at the clip's middle.
 RegisterNetEvent('whip_core:client:playGiveAnim', function(otherServerId, isGiver)
+    -- A downed player keeps their pose: the ground death is a looped clip laid once (client/death.lua).
+    if PlayerIsDead then return end
     local ped  = PlayerPedId()
     local dict = 'mp_common'
     local clip = isGiver and 'givetake1_a' or 'givetake1_b'
@@ -2683,7 +2685,7 @@ RegisterNetEvent('whip_core:client:playGiveAnim', function(otherServerId, isGive
 
         -- (The props cross at the clip's middle, on the server's clock.)
         Wait(2000)
-        ClearPedTasks(isGiver and ped or PlayerPedId())
+        StopAnimTask(PlayerPedId(), dict, clip, 1.0)
         RemoveAnimDict(dict)
     else
         RemoveAnimDict(dict)
