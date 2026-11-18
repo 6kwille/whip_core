@@ -3723,6 +3723,25 @@ if not holdId then return false, why end
 <div class="return-info"><strong>Returns: </strong><code>table|nil</code></div>
 </div></div>
 
+<div class="export-card" id="isnearatm" data-search="isnearatm atm cash machine near standing position">
+<div class="export-header"><span class="export-name">IsNearAtm(source, range?)</span><span class="export-side side-server">SERVER</span></div>
+<div class="export-body">
+<p>Is the player standing at a cash machine? GTA's own machines and <code>Config.AtmExtraPositions</code>, measured across the ground from each machine's base. For a resource that wants the standing-at-a-machine rule; WHIP's own ATMs find machines by model and don't ask this.</p>
+<table class="param-table"><tr><th>Param</th><th>Type</th><th>Description</th></tr>
+<tr><td>source</td><td>number</td><td>Server id</td></tr>
+<tr><td>range</td><td>number?</td><td>Metres, 0.5 to 10. Default <code>AtmActiveRange</code> + 1</td></tr></table>
+<div class="return-info"><strong>Returns: </strong><code>true, at</code> (the machine's base) or <code>false, why</code></div>
+</div></div>
+
+<div class="export-card" id="getnearestatm" data-search="getnearestatm atm cash machine nearest position">
+<div class="export-header"><span class="export-name">GetNearestAtm(coords)</span><span class="export-side side-server">SERVER</span></div>
+<div class="export-body">
+<p>The cash machine nearest a place, from the same list as <code>IsNearAtm</code>, within 3 m of its height.</p>
+<table class="param-table"><tr><th>Param</th><th>Type</th><th>Description</th></tr>
+<tr><td>coords</td><td>vector3|table</td><td>The place</td></tr></table>
+<div class="return-info"><strong>Returns: </strong><code>at, distance</code> (the machine's base, and the distance across the ground), or <code>nil</code></div>
+</div></div>
+
 <div class="export-card" id="getcharacterbankaccounts" data-search="getcharacterbankaccounts getcharacteraccounts character accounts role">
 <div class="export-header"><span class="export-name">GetCharacterBankAccounts(charId)</span><span class="export-side side-server">SERVER</span></div>
 <div class="export-body">
@@ -11703,7 +11722,9 @@ end</code></pre>
 <tr><td><code>AtmVisibleRange</code> / <code>AtmActiveRange</code></td><td><code>3.0</code> / <code>1.4</code></td><td>Circle shows; circle works</td></tr>
 <tr><td><code>AtmBadgeOffset</code></td><td>table</td><td>The circle's spot per model (<code>side</code>, <code>out</code>, <code>up</code>, <code>yaw</code>), plus <code>default</code></td></tr>
 <tr><td><code>AtmMaxDigits</code></td><td><code>9</code></td><td>Longest amount ($999,999,999)</td></tr>
+<tr><td><code>AtmExtraPositions</code></td><td><code>{}</code></td><td>Machines a map mod or an MLO adds, for <code>IsNearAtm</code> and <code>GetNearestAtm</code> (a <code>vector3</code> at each one's base)</td></tr>
 </table>
+<p>For a resource of your own that wants the player standing at a machine, the server knows where GTA's own are (<code>server/atm_positions.lua</code>, 121 read from the game's map): <code>IsNearAtm(source, range?)</code> answers <code>true, at</code> or <code>false, why</code>, and <code>GetNearestAtm(coords)</code> the machine and its distance. Machines a map mod or an MLO adds go in <code>Config.AtmExtraPositions</code> (<code>vector3</code> at the machine's base). WHIP's own ATMs don't ask this, so a machine missing from the list still works for them.</p>
 
 <h3>Time and weather</h3>
 <table class="event-table">
