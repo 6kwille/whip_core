@@ -152,6 +152,7 @@ server_scripts {
     'server/hands.lua',
     'server/devtools_base.lua',
     'server/inventory_sync.lua',
+    'server/item_notices.lua',   -- the box when an item comes or goes (whip_core:item:added / :removed)
     -- Before player_lifecycle.lua, whose login sync rides it.
     'server/themes.lua',
     'server/requirements.lua',
@@ -294,6 +295,7 @@ client_scripts {
     'client/place_point.lua',   -- PlacePoint: a point placed in the world (OvMove's markers, tools/ov_move.lua)
     'client/portrait.lua',
     'client/inventory.lua',
+    'client/item_notices.lua',   -- hands server/item_notices.lua's box to the page
     -- After inventory.lua: it sets Inventory.freeHands at file scope.
     'client/hands.lua',
     -- Before every file that calls DuiPage.new at file scope.
