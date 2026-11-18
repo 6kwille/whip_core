@@ -93,6 +93,8 @@
 
 Actions = {}
 
+local CORE = GetCurrentResourceName()
+
 --- What each action is mounted as: [key] = { kind, ids = { engineId, ... }, partKey?, entity? }
 local mounted = {}
 
@@ -382,13 +384,26 @@ local function check(entry, o, ctx, displayCache)
     end
 
     if def.canInteract == nil and o.canInteract == nil then return true end
-    if not displayCache then return checkCallbacks(entry, o, ctx) end
+    -- whip_core's own callbacks are plain calls, asked every time (a point option's reach is one); the cache
+    -- spares other resources' calls their round trip.
+    if not displayCache or entry.owner == CORE then return checkCallbacks(entry, o, ctx) end
     local now = GetGameTimer()
-    local same = displayCache.at and now >= displayCache.at and now - displayCache.at < 100
+    local same = displayCache.at and now >= displayCache.at and now - displayCache.at < 500
         and displayCache.action == def.canInteract and displayCache.option == o.canInteract
     if same then
         for key, value in pairs(ctx) do
-            if type(value) == 'table' or displayCache.ctx[key] ~= value then same = false break end
+            local previous = displayCache.ctx[key]
+            if key == 'player' and type(value) == 'table' and type(previous) == 'table' then
+                for field, fact in pairs(value) do
+                    if type(fact) == 'table' or previous[field] ~= fact then same = false break end
+                end
+                for field in pairs(previous) do
+                    if value[field] == nil then same = false break end
+                end
+            elseif type(value) == 'table' or previous ~= value then
+                same = false
+            end
+            if not same then break end
         end
         for key in pairs(displayCache.ctx) do
             if ctx[key] == nil then same = false break end
