@@ -141,6 +141,7 @@ InteractSpec.ACTION_AT = {
     aimModels   = { with = { 'aimBox' } },
     radial      = { place = true },
     model       = { place = true },
+    list        = { place = true },   -- another prompt's list, by an option in it: 'atm:balance' (client/interact.lua)
     heading     = { with = { 'coords', 'entity', 'netId', 'model' } },
     follow      = { with = { 'coords' } },
     offset      = { with = { 'entity', 'netId', 'model' } },
