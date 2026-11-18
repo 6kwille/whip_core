@@ -16,11 +16,12 @@ local DEV_COMMANDS = {}
 --- its own `command.<name>` ACE) and the handler asks whip.devtools, and says so when refused.
 ---@param name string
 ---@param fn fun(source: number, args: table, raw: string)
-local function devCommand(name, fn)
-    DEV_COMMANDS[name] = true
+---@param help table|nil  { help = 'What it does', params = { { name = 'id', help = '...' } } } for the chat's suggestion
+local function devCommand(name, fn, help)
+    DEV_COMMANDS[name] = type(help) == 'table' and help or true
     RegisterCommand(name, function(source, args, raw)
         if source ~= 0 and not DevTools.isAllowed(source) then
-            ShowError(source, 'That command needs whip.devtools')
+            ShowError(source, DevTools.isEligible(source) and DevTools.OFF_REASON or 'That command needs whip.devtools')
             return
         end
         return fn(source, args, raw)
@@ -44,6 +45,34 @@ end
 ---@return string|nil
 exports('GetCommandAce', function(name)
     return DEV_COMMANDS[name] and 'whip.devtools' or nil
+end)
+
+-- ============================================
+-- Chat suggestions for the admin commands
+-- ============================================
+-- Staff get these as chat suggestions when their character loads, and again on whip_core's start: one event each,
+-- only to players holding whip.devtools. The handlers still check developer mode when a command is run.
+
+--- Send the admin commands to one player's chat, if they hold whip.devtools.
+---@param src number
+local function suggestCommandsTo(src)
+    src = tonumber(src)
+    if not src or not IsPlayerAceAllowed(src, 'whip.devtools') then return end
+    local list = {}
+    for name, info in pairs(DEV_COMMANDS) do
+        local help = type(info) == 'table' and info or nil
+        list[#list + 1] = { name = '/' .. name, help = help and help.help or '', params = help and help.params or nil }
+    end
+    TriggerClientEvent('chat:addSuggestions', src, list)
+end
+
+Character.onLife('loaded', function(e) suggestCommandsTo(e.source) end)
+
+-- A restart of whip_core: the commands are registered again, so the staff in the game get them again. After a
+-- moment, so every devCommand below (and in other files) has been made.
+CreateThread(function()
+    Wait(2000)
+    for _, id in ipairs(GetPlayers()) do suggestCommandsTo(id) end
 end)
 
 --- Where a command's lines go: the server console, or the chat of the admin who typed it.
